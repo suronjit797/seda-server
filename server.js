@@ -16,6 +16,9 @@ server.use(express.json())
 server.use(cookieParser())
 server.set('trust proxy', 1)
 
+// ******************* Static Page ***********************
+server.use(express.static('./', {index: 'index.html'}))
+
 // ******************* ROUTES ***********************
 server.use("/users", usersRoute)
 
