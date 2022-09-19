@@ -3,7 +3,7 @@ import createHttpError from 'http-errors'
 import multer from 'multer'
 import { generateJWTToken, tokenMiddleware } from '../../utils/jwtAuth.js'
 import Users from './schema.js'
-import { saveToUsers } from '../../utils/cloudinarySetup.js'
+import { saveToMedia, saveToUsers } from '../../utils/cloudinarySetup.js'
 import roleCheck from '../../utils/roleCheckerMiddleware.js'
 
 
@@ -15,6 +15,22 @@ usersRoute.get('/', tokenMiddleware, [roleCheck.isSuperAdmin], async (req, res, 
     try {
         const users = await Users.find()
         res.status(200).send(users)
+    } catch (error) {
+        next(error)
+        console.log(error)
+    }
+})
+
+usersRoute.post('/', async (req, res, next) => {
+    try {
+        const user = await Users.findOne({ email: req.body.email })
+        if (!user) {
+            const newUser = new Users(req.body)
+            const user = await newUser.save({ new: true })
+            res.status(201).send(user)
+        } else {
+            next(createHttpError(402, "Email already used."))
+        }
     } catch (error) {
         next(error)
         console.log(error)
@@ -122,7 +138,7 @@ usersRoute.put('/:userId', tokenMiddleware, async (req, res, next) => {
         next(error)
     }
 });
-usersRoute.put('/:userId/avatarUpload',tokenMiddleware,[roleCheck.isAdmin],multer({ storage: saveToUsers }).single("avatar"),  async(req, res, next) => {
+usersRoute.put('/:userId/avatarUpload',tokenMiddleware,[roleCheck.isSuperAdmin],multer({ storage: saveToUsers }).single("avatar"),  async(req, res, next) => {
   try {
     const imageUrl = req.file.path;
 
@@ -136,6 +152,20 @@ usersRoute.put('/:userId/avatarUpload',tokenMiddleware,[roleCheck.isAdmin],multe
     next(error)
   }
 });
+usersRoute.put('/:userId/logoUpload',tokenMiddleware,[roleCheck.isSuperAdmin],multer({ storage: saveToMedia }).single("logo"),  async(req, res, next) => {
+    try {
+      const imageUrl = req.file.path;
+      const updateUser = await Users.findByIdAndUpdate(
+        req.params.userId,
+        { logo: imageUrl },
+        { new: true }
+      )
+      res.status(201).send(updateUser)
+    } catch (error) {
+      next(error)
+      console.log(error)
+    }
+  });
 
 //this will be used by super admin to get all users
 usersRoute.get('/role/:role', tokenMiddleware, async (req, res, next) => {

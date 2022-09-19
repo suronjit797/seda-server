@@ -6,6 +6,7 @@ const userSchema = new Schema({
     name: { type: String, required: true },
     email: { type: String, match: /.+\@.+\..+/, required: true },
     password: { type: String, required: true },
+    companyName: { type: String },
     buildingName: { type: String },
     buildingType: { type: String },
     phone: { type: String },
