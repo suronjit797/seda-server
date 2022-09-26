@@ -152,6 +152,34 @@ usersRoute.put('/:userId/avatarUpload',tokenMiddleware,[roleCheck.isSuperAdmin],
     next(error)
   }
 });
+usersRoute.put('/:userId/SDUpload',tokenMiddleware,[roleCheck.isSuperAdmin],multer({ storage: saveToMedia }).single("SchematicDiagram"),  async(req, res, next) => {
+    try {
+      const imageUrl = req.file.path;
+      const updateUser = await Users.findByIdAndUpdate(
+        req.params.userId,
+        { SchematicDiagram: imageUrl },
+        { new: true }
+      )
+      res.status(201).send(updateUser)
+    } catch (error) {
+      next(error)
+      console.log(error)
+    }
+  });
+  usersRoute.put('/:userId/EDUpload',tokenMiddleware,[roleCheck.isSuperAdmin],multer({ storage: saveToMedia }).single("SchematicDiagram"),  async(req, res, next) => {
+    try {
+      const imageUrl = req.file.path;
+      const updateUser = await Users.findByIdAndUpdate(
+        req.params.userId,
+        { SchematicDiagram: imageUrl },
+        { new: true }
+      )
+      res.status(201).send(updateUser)
+    } catch (error) {
+      next(error)
+      console.log(error)
+    }
+  });
 usersRoute.put('/:userId/logoUpload',tokenMiddleware,[roleCheck.isSuperAdmin],multer({ storage: saveToMedia }).single("logo"),  async(req, res, next) => {
     try {
       const imageUrl = req.file.path;

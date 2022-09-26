@@ -4,22 +4,14 @@ const { Schema, model } = mongoose
 
 const userSchema = new Schema({
     name: { type: String, required: true },
-    email: { type: String, match: /.+\@.+\..+/, required: true },
+    email: { type: String, match: /.+\@.+\..+/, required: true,unique: true },
     password: { type: String, required: true },
     companyName: { type: String },
-    buildingName: { type: String },
-    buildingType: { type: String },
     phone: { type: String },
-    address: { type: String },
-    netFloorArea: { type: String },
-    tariffElectricity: { type: String },
-    referenceDocument: [{
-        name: { type: String },
-        file: { type: String }
-    }],
-    remark: { type: String },
-    role: { type: String, required: true, enum: ["superAdmin", "installer", "admin", "user", "public", "clientUser", "clientOperatorUser"], default: "admin" },
+    fax:{type:String},
+    role: { type: String, required: true, enum: ["superAdmin", "installer", "admin", "user", "public"], default: "admin" },
     parent: { type: String },
+    site: { type: String },
     isActive: { type: Boolean, default: true },
     logo: { type: String },
     avatar: { type: String },

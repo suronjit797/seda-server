@@ -7,6 +7,8 @@ import cookieParser from "cookie-parser"
 import errors from './src/utils/errorHandlers.js'
 import {port, corsConfig} from './src/utils/serverConfig.js'
 import usersRoute from './src/services/users/routes.js'
+import BuildingTypeRoute from './src/services/buildingType/routes.js'
+import SiteLocationRoute from './src/services/siteLocation/routes.js'
 
 const server = express()
 
@@ -21,6 +23,8 @@ server.use(express.static('./', {index: 'index.html'}))
 
 // ******************* ROUTES ***********************
 server.use("/users", usersRoute)
+server.use("/building-type",BuildingTypeRoute)
+server.use("/site-location",SiteLocationRoute)
 
 // ******************* ERROR HANDLERS ******************
 server.use(errors.notFound)
