@@ -9,6 +9,7 @@ import {port, corsConfig} from './src/utils/serverConfig.js'
 import usersRoute from './src/services/users/routes.js'
 import BuildingTypeRoute from './src/services/buildingType/routes.js'
 import SiteLocationRoute from './src/services/siteLocation/routes.js'
+import documentRoute from './src/services/documents/routes.js'
 
 const server = express()
 
@@ -25,6 +26,7 @@ server.use(express.static('./', {index: 'index.html'}))
 server.use("/users", usersRoute)
 server.use("/building-type",BuildingTypeRoute)
 server.use("/site-location",SiteLocationRoute)
+server.use("/documents", documentRoute)
 
 // ******************* ERROR HANDLERS ******************
 server.use(errors.notFound)

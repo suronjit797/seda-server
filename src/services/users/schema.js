@@ -7,6 +7,7 @@ const userSchema = new Schema({
     email: { type: String, match: /.+\@.+\..+/, required: true,unique: true },
     password: { type: String, required: true },
     companyName: { type: String },
+    companyAddress:{type: String},
     phone: { type: String },
     fax:{type:String},
     role: { type: String, required: true, enum: ["superAdmin", "installer", "admin", "user", "public"], default: "admin" },

@@ -35,7 +35,7 @@ SiteLocationRoute.put('/:siteId', tokenMiddleware, async (req, res, next) => {
 })
 SiteLocationRoute.get('/:siteId', tokenMiddleware, async (req, res, next) => {
     try {
-        const siteLocation = await SiteLocation.find({ _id: req.params.siteId }).populate('admin').populate('buildingBackground').populate('installer')
+        const siteLocation = await SiteLocation.findOne({ _id: req.params.siteId }).populate('admin').populate('buildingBackground').populate('installer')
         res.status(200).send(siteLocation)
     } catch (error) {
         next(error)
