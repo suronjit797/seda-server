@@ -43,4 +43,14 @@ documentRoute.get('/:siteId/:type', async (req, res, next) => {
     }
 })
 
+documentRoute.delete('/:documentId', async (req, res, next) => {
+    try {
+        const documents = await Documents.findByIdAndDelete(req.params.documentId)
+        res.status(200).send('deleted')
+    } catch (error) {
+        next(error)
+        console.log(error)
+    }
+})
+
 export default documentRoute;
