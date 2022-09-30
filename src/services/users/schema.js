@@ -11,11 +11,11 @@ const userSchema = new Schema({
     phone: { type: String },
     fax:{type:String},
     role: { type: String, required: true, enum: ["superAdmin", "installer", "admin", "user", "public"], default: "admin" },
-    parent: { type: String },
-    site: { type: String },
+    site: {type: Schema.Types.ObjectId, ref: "SiteLocation"},
     isActive: { type: Boolean, default: true },
     logo: { type: String },
     avatar: { type: String },
+    lastLogin:{type: Date}
 }, {
     timestamps: true
 })

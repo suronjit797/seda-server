@@ -13,7 +13,7 @@ const cookieAge = 365 * 24 * 60 * 60 * 1000 //365 days
 //this will be used by super admin to get all users
 usersRoute.get('/', tokenMiddleware, [roleCheck.isSuperAdmin], async (req, res, next) => {
     try {
-        const users = await Users.find()
+        const users = await Users.find({ "role": { "$ne": 'superAdmin' } })
         res.status(200).send(users)
     } catch (error) {
         next(error)
@@ -68,6 +68,7 @@ usersRoute.post('/login', async (req, res, next) => {
                 httpOnly: true,
                 maxAge: cookieAge,
             })
+            const updateUser = await Users.findByIdAndUpdate(user._id, {lastLogin: new Date()})
             res.status(200).send(token)
         } else {
             next(createHttpError(401, "Credentials information wrong!"))
@@ -81,7 +82,7 @@ usersRoute.post('/login', async (req, res, next) => {
 //get current logged user data
 usersRoute.get('/me', tokenMiddleware, async (req, res, next) => {
     try {
-        const userMe = await Users.findById(req.user._id)
+        const userMe = await Users.findById(req.user._id).populate('site')
         res.status(200).send(userMe)
     } catch (error) {
         next(error)
@@ -94,6 +95,21 @@ usersRoute.put('/me', tokenMiddleware, async (req, res, next) => {
     try {
         const updateUser = await Users.findByIdAndUpdate(req.user._id, req.body, { new: true })
         res.status(200).send(updateUser)
+    } catch (error) {
+        next(error)
+    }
+});
+
+usersRoute.post('/me/change-password', tokenMiddleware, async (req, res, next) => {
+    try {
+        const { currentPassword, password } = req.body
+        const user = await Users.checkCredentials(req.user.email, currentPassword)
+        if(user){
+            const updateUser = await Users.findByIdAndUpdate(req.user._id, req.body, { new: true })
+            res.status(200).send(updateUser)
+        }else{
+            next(createHttpError(401, "Current password wrong!"))
+        }
     } catch (error) {
         next(error)
     }
@@ -123,7 +139,7 @@ usersRoute.get('/logout', (req, res) => {
 //find a specific user
 usersRoute.get('/:userId', tokenMiddleware, async (req, res, next) => {
     try {
-        const users = await Users.find({ _id: req.params.userId })
+        const users = await Users.findOne({ _id: req.params.userId }).populate('site')
         res.status(200).send(users)
     } catch (error) {
         next(error)
@@ -138,6 +154,7 @@ usersRoute.put('/:userId', tokenMiddleware, async (req, res, next) => {
         next(error)
     }
 });
+
 usersRoute.put('/:userId/avatarUpload',tokenMiddleware,[roleCheck.isSuperAdmin],multer({ storage: saveToUsers }).single("avatar"),  async(req, res, next) => {
   try {
     const imageUrl = req.file.path;
@@ -170,7 +187,7 @@ usersRoute.put('/:userId/logoUpload',tokenMiddleware,[roleCheck.isSuperAdmin],mu
 //this will be used by super admin to get all users
 usersRoute.get('/role/:role', tokenMiddleware, async (req, res, next) => {
     try {
-        const users = await Users.find({ role: req.params.role })
+        const users = await Users.find({ role: req.params.role }).populate('site')
         res.status(200).send(users)
     } catch (error) {
         next(error)
