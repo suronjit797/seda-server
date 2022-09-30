@@ -42,6 +42,24 @@ SiteLocationRoute.get('/:siteId', tokenMiddleware, async (req, res, next) => {
         console.log(error)
     }
 })
+SiteLocationRoute.get('/admin-sites/:adminId', tokenMiddleware, async (req, res, next) => {
+    try {
+        const siteLocation = await SiteLocation.find({ admin: req.params.adminId }).populate('admin').populate('buildingBackground').populate('installer')
+        res.status(200).send(siteLocation)
+    } catch (error) {
+        next(error)
+        console.log(error)
+    }
+})
+SiteLocationRoute.get('/installer-sites/:installerId', tokenMiddleware, async (req, res, next) => {
+    try {
+        const siteLocation = await SiteLocation.find({ installer: req.params.installerId }).populate('admin').populate('buildingBackground').populate('installer')
+        res.status(200).send(siteLocation)
+    } catch (error) {
+        next(error)
+        console.log(error)
+    }
+})
 SiteLocationRoute.delete('/:siteId', tokenMiddleware, async (req, res, next) => {
     try {
         const siteLocation = await SiteLocation.findByIdAndDelete(req.params.siteId)
