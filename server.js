@@ -10,6 +10,7 @@ import usersRoute from './src/services/users/routes.js'
 import BuildingTypeRoute from './src/services/buildingType/routes.js'
 import SiteLocationRoute from './src/services/siteLocation/routes.js'
 import documentRoute from './src/services/documents/routes.js'
+import DeviceTypeRoute from './src/services/deviceType/routes.js'
 
 const server = express()
 
@@ -25,6 +26,7 @@ server.use(express.static('./', {index: 'index.html'}))
 // ******************* ROUTES ***********************
 server.use("/users", usersRoute)
 server.use("/building-type",BuildingTypeRoute)
+server.use("/device-type",DeviceTypeRoute)
 server.use("/site-location",SiteLocationRoute)
 server.use("/documents", documentRoute)
 
