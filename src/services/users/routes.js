@@ -5,6 +5,7 @@ import { generateJWTToken, tokenMiddleware } from '../../utils/jwtAuth.js'
 import Users from './schema.js'
 import { saveToMedia, saveToUsers } from '../../utils/cloudinarySetup.js'
 import roleCheck from '../../utils/roleCheckerMiddleware.js'
+import sendEmail from '../../utils/sendEmail.js'
 
 
 const usersRoute = express.Router()
@@ -61,6 +62,7 @@ usersRoute.post('/register', async (req, res, next) => {
 usersRoute.post('/login', async (req, res, next) => {
     try {
         const { email, password } = req.body
+        console.log(req.body)
         const user = await Users.checkCredentials(email, password)
         if (user) {
             const token = await generateJWTToken(user)
@@ -68,10 +70,29 @@ usersRoute.post('/login', async (req, res, next) => {
                 httpOnly: true,
                 maxAge: cookieAge,
             })
-            const updateUser = await Users.findByIdAndUpdate(user._id, {lastLogin: new Date()})
+            const updateUser = await Users.findByIdAndUpdate(user._id, { lastLogin: new Date() })
             res.status(200).send(token)
         } else {
             next(createHttpError(401, "Credentials information wrong!"))
+        }
+    } catch (error) {
+        next(error)
+        console.log(error)
+    }
+});
+
+usersRoute.post('/forgot-password', async (req, res, next) => {
+    try {
+        const { email } = req.body
+        const user = await Users.findOne({ email: email })
+        console.log(user)
+        if (user) {
+            const token = await generateJWTToken(user)
+            const link = `${process.env.FE_DEV_TRUST_BACKEND_URL}/reset-password/${token}`;
+            await sendEmail(user.email, "Password reset", link);
+            res.status(200).send("password reset link sent to your email account");
+        } else {
+            next(createHttpError(401, "Email address not found!"))
         }
     } catch (error) {
         next(error)
@@ -104,10 +125,10 @@ usersRoute.post('/me/change-password', tokenMiddleware, async (req, res, next) =
     try {
         const { currentPassword, password } = req.body
         const user = await Users.checkCredentials(req.user.email, currentPassword)
-        if(user){
+        if (user) {
             const updateUser = await Users.findByIdAndUpdate(req.user._id, req.body, { new: true })
             res.status(200).send(updateUser)
-        }else{
+        } else {
             next(createHttpError(401, "Current password wrong!"))
         }
     } catch (error) {
@@ -155,34 +176,34 @@ usersRoute.put('/:userId', tokenMiddleware, async (req, res, next) => {
     }
 });
 
-usersRoute.put('/:userId/avatarUpload',tokenMiddleware,[roleCheck.isSuperAdmin],multer({ storage: saveToUsers }).single("avatar"),  async(req, res, next) => {
-  try {
-    const imageUrl = req.file.path;
-
-    const updateUser = await Users.findByIdAndUpdate(
-      req.params.userId,
-      { avatar: imageUrl },
-      { new: true }
-    )
-    res.status(201).send(updateUser)
-  } catch (error) {
-    next(error)
-  }
-});
-usersRoute.put('/:userId/logoUpload',tokenMiddleware,[roleCheck.isSuperAdmin],multer({ storage: saveToMedia }).single("logo"),  async(req, res, next) => {
+usersRoute.put('/:userId/avatarUpload', tokenMiddleware, [roleCheck.isSuperAdmin], multer({ storage: saveToUsers }).single("avatar"), async (req, res, next) => {
     try {
-      const imageUrl = req.file.path;
-      const updateUser = await Users.findByIdAndUpdate(
-        req.params.userId,
-        { logo: imageUrl },
-        { new: true }
-      )
-      res.status(201).send(updateUser)
+        const imageUrl = req.file.path;
+
+        const updateUser = await Users.findByIdAndUpdate(
+            req.params.userId,
+            { avatar: imageUrl },
+            { new: true }
+        )
+        res.status(201).send(updateUser)
     } catch (error) {
-      next(error)
-      console.log(error)
+        next(error)
     }
-  });
+});
+usersRoute.put('/:userId/logoUpload', tokenMiddleware, [roleCheck.isSuperAdmin], multer({ storage: saveToMedia }).single("logo"), async (req, res, next) => {
+    try {
+        const imageUrl = req.file.path;
+        const updateUser = await Users.findByIdAndUpdate(
+            req.params.userId,
+            { logo: imageUrl },
+            { new: true }
+        )
+        res.status(201).send(updateUser)
+    } catch (error) {
+        next(error)
+        console.log(error)
+    }
+});
 
 //this will be used by super admin to get all users
 usersRoute.get('/role/:role', tokenMiddleware, async (req, res, next) => {
@@ -195,12 +216,12 @@ usersRoute.get('/role/:role', tokenMiddleware, async (req, res, next) => {
     }
 })
 //only super admin can delete a user
-usersRoute.delete('/:userId',tokenMiddleware,[roleCheck.isSuperAdmin], async (req, res, next) => {
-  try {
-    const updateUser = await Users.findByIdAndDelete(req.params.userId)
-    res.status(204).send('deleted')
-  } catch (error) {
-    next(error)
-  }
+usersRoute.delete('/:userId', tokenMiddleware, [roleCheck.isSuperAdmin], async (req, res, next) => {
+    try {
+        const updateUser = await Users.findByIdAndDelete(req.params.userId)
+        res.status(204).send('deleted')
+    } catch (error) {
+        next(error)
+    }
 });
 export default usersRoute;

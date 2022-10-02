@@ -1,6 +1,7 @@
 import jwt from 'jsonwebtoken'
 import createHttpError from 'http-errors'
 import Users from '../services/users/schema.js'
+import Devices from '../services/devices/schema.js'
 
 //============== Generate JWT Token
 const generateJWT = (userId) =>
@@ -54,4 +55,22 @@ export const tokenMiddleware = async(req,res,next)=>{
     } catch (error) {
         next(createHttpError(401,"Token not valid"))
     }
+}
+
+export const apiKeyMiddleware = async(req, res, next)=>{
+  try {
+    if(!req.headers.authorization){
+      next(createHttpError(401,'Unauthorized!'))
+    }else{
+      const device= await Devices.findOne({apiKey: req.headers.authorization})
+      if(device){
+        req.device = device
+        next()
+      }else{
+        next(createHttpError(401,'API Key not valid!'))
+      }
+    }
+  } catch (error) {
+    next(createHttpError(401,"API Key not valid!"))
+  }
 }
