@@ -1,11 +1,12 @@
 import express from 'express'
 import createHttpError from 'http-errors'
 import multer from 'multer'
-import { generateJWTToken, tokenMiddleware } from '../../utils/jwtAuth.js'
+import { generateJWTToken, tokenMiddleware, validTokenMiddleware } from '../../utils/jwtAuth.js'
 import Users from './schema.js'
 import { saveToMedia, saveToUsers } from '../../utils/cloudinarySetup.js'
 import roleCheck from '../../utils/roleCheckerMiddleware.js'
 import sendEmail from '../../utils/sendEmail.js'
+import forgotPassword from '../../emails/forgotPassword.js'
 
 
 const usersRoute = express.Router()
@@ -62,7 +63,6 @@ usersRoute.post('/register', async (req, res, next) => {
 usersRoute.post('/login', async (req, res, next) => {
     try {
         const { email, password } = req.body
-        console.log(req.body)
         const user = await Users.checkCredentials(email, password)
         if (user) {
             const token = await generateJWTToken(user)
@@ -85,11 +85,11 @@ usersRoute.post('/forgot-password', async (req, res, next) => {
     try {
         const { email } = req.body
         const user = await Users.findOne({ email: email })
-        console.log(user)
         if (user) {
             const token = await generateJWTToken(user)
             const link = `${process.env.FE_DEV_TRUST_BACKEND_URL}/reset-password/${token}`;
-            await sendEmail(user.email, "Password reset", link);
+            const body = forgotPassword(user.name, link)
+            await sendEmail(user?.email, "SEDA OEMCP System Password Reset", body);
             res.status(200).send("password reset link sent to your email account");
         } else {
             next(createHttpError(401, "Email address not found!"))
@@ -99,6 +99,34 @@ usersRoute.post('/forgot-password', async (req, res, next) => {
         console.log(error)
     }
 });
+usersRoute.post('/reset-password-token',validTokenMiddleware, async(req, res, next)=>{
+    try {
+        const {token} = req.body
+        if(token){
+            res.status(200).send("valid");
+        }else{
+            next(createHttpError(401, "Reset Link not valid!"))
+        }
+    } catch (error) {
+        console.log(error)
+    }
+})
+usersRoute.put('/reset-password',validTokenMiddleware, async(req, res, next)=>{
+    try {
+        console.log(req.user)
+        const user= await Users.findByIdAndUpdate(req.user._id, req.body, { new: true })
+        if(user){
+            res.status(200).send(user);
+        }else{
+            next(createHttpError(401, "Reset Link not valid!"))
+        }
+    } catch (error) {
+        console.log(error)
+    }
+})
+
+
+
 
 //get current logged user data
 usersRoute.get('/me', tokenMiddleware, async (req, res, next) => {
