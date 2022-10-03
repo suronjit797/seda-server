@@ -3,12 +3,12 @@ import nodemailer from "nodemailer"
 const sendEmail = async (email, subject, text) => {
     try {
         const transporter = nodemailer.createTransport({
-            host: 'mail.hthreetech.com',
+            host: process.env.EMAIL_HOST,
             port: 465,
             secure: true, // true for 465, false for other ports
             auth: {
-                user: 'seda@hthreetech.com',
-                pass: '8KNoPdqwaEei'
+                user: process.env.EMAIL_USER,
+                pass: process.env.EMAIL_PASS
             }
         });
         // verify connection configuration
@@ -20,7 +20,7 @@ const sendEmail = async (email, subject, text) => {
             }
         });
         const mailOptions = {
-            from: '"SEDA Team" <seda@hthreetech.com>',
+            from: '"SEDA Team" <no-reply@ivis.com.my>',
             to: email,
             subject: subject,
             text: text,
