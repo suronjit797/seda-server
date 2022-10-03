@@ -20,7 +20,7 @@ const sendEmail = async (email, subject, text) => {
             }
         });
         const mailOptions = {
-            from: '"SEDA Team" <no-reply@ivis.com.my>',
+            from: '"SEDA Team" <seda@hthreetech.com>',
             to: email,
             subject: subject,
             text: text,
