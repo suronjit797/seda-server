@@ -2,6 +2,7 @@ import express from 'express'
 import { apiKeyMiddleware, tokenMiddleware } from '../../utils/jwtAuth.js'
 import Devices from './schema.js'
 import DeviceData from './deviceDataSchema.js'
+import mongoose from 'mongoose'
 
 const DeviceRoute = express.Router()
 
@@ -88,7 +89,37 @@ DeviceRoute.post('/capture', apiKeyMiddleware, async (req, res, next) => {
         console.log(error)
     }
 })
-
+DeviceRoute.get('/device-data/:deviceId', async (req, res, next) => {
+    try {
+        const data = await DeviceData.find({device: req.params.deviceId})
+        res.status(201).send(data)
+    } catch (error) {
+        next(error)
+        console.log(error)
+    }
+})
+DeviceRoute.get('/device-parameters/:deviceId', tokenMiddleware, async (req, res, next) => {
+    try {
+        const parameters = await DeviceData.aggregate([
+            {
+                // only match documents that have this field
+                // you can omit this stage if you don't have missing fieldX
+                $match: { "device": new mongoose.Types.ObjectId(req.params.deviceId) }
+            },
+            {
+                 $group: {
+                    "_id": "$name",
+                    "device": { "$first": "$device" },  //$first accumulator
+                    "count": { "$sum": 1 },  //$sum accumulator
+            }
+        }
+            
+        ])
+        res.status(201).send(parameters)
+    } catch (error) {
+        console.log(error)
+    }
+})
 export default DeviceRoute;
 
 
