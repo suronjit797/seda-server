@@ -7,7 +7,7 @@ const SiteLocationRoute = express.Router()
 
 SiteLocationRoute.get('/', tokenMiddleware, async (req, res, next) => {
     try {
-        const siteLocations = await SiteLocation.find().populate('admin').populate('buildingBackground').populate('installer')
+        const siteLocations = await SiteLocation.find().populate('admin').populate('buildingBackground').populate('installer').populate('tariffElectricity')
         res.status(200).send(siteLocations)
     } catch (error) {
         next(error)
@@ -35,7 +35,7 @@ SiteLocationRoute.put('/:siteId', tokenMiddleware, async (req, res, next) => {
 })
 SiteLocationRoute.get('/:siteId', tokenMiddleware, async (req, res, next) => {
     try {
-        const siteLocation = await SiteLocation.findOne({ _id: req.params.siteId }).populate('admin').populate('buildingBackground').populate('installer')
+        const siteLocation = await SiteLocation.findOne({ _id: req.params.siteId }).populate('admin').populate('buildingBackground').populate('installer').populate('tariffElectricity')
         res.status(200).send(siteLocation)
     } catch (error) {
         next(error)
@@ -44,7 +44,7 @@ SiteLocationRoute.get('/:siteId', tokenMiddleware, async (req, res, next) => {
 })
 SiteLocationRoute.get('/admin-sites/:adminId', tokenMiddleware, async (req, res, next) => {
     try {
-        const siteLocation = await SiteLocation.find({ admin: req.params.adminId }).populate('admin').populate('buildingBackground').populate('installer')
+        const siteLocation = await SiteLocation.find({ admin: req.params.adminId }).populate('admin').populate('buildingBackground').populate('installer').populate('tariffElectricity')
         res.status(200).send(siteLocation)
     } catch (error) {
         next(error)
@@ -53,7 +53,7 @@ SiteLocationRoute.get('/admin-sites/:adminId', tokenMiddleware, async (req, res,
 })
 SiteLocationRoute.get('/installer-sites/:installerId', tokenMiddleware, async (req, res, next) => {
     try {
-        const siteLocation = await SiteLocation.find({ installer: req.params.installerId }).populate('admin').populate('buildingBackground').populate('installer')
+        const siteLocation = await SiteLocation.find({ installer: req.params.installerId }).populate('admin').populate('buildingBackground').populate('installer').populate('tariffElectricity')
         res.status(200).send(siteLocation)
     } catch (error) {
         next(error)

@@ -14,7 +14,7 @@ const siteLocationSchema = new Schema({
     contactPersonPhone: { type: String },
     localAuthority:{ type: String },
     netFloorArea: { type: String },
-    tariffElectricity: { type: String },
+    tariffElectricity: {type: Schema.Types.ObjectId, ref: "ElectricityTariff"},
     remark: { type: String },
     installer: {type: Schema.Types.ObjectId, ref: "Users", required: true},
     admin: {type: Schema.Types.ObjectId, ref: "Users", required: true},
