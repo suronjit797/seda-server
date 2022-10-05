@@ -10,7 +10,7 @@ import forgotPassword from '../../emails/forgotPassword.js'
 
 
 const usersRoute = express.Router()
-const cookieAge = 365 * 24 * 60 * 60 * 1000 //365 days
+const cookieAge = 30 * 24 * 60 * 60 * 1000 //30 days
 
 //this will be used by super admin to get all users
 usersRoute.get('/', tokenMiddleware, [roleCheck.isSuperAdmin], async (req, res, next) => {
@@ -26,15 +26,16 @@ usersRoute.get('/', tokenMiddleware, [roleCheck.isSuperAdmin], async (req, res, 
 usersRoute.post('/', async (req, res, next) => {
     try {
         const user = await Users.findOne({ email: req.body.email })
+        console.log(user)
         if (!user) {
             const newUser = new Users(req.body)
             const user = await newUser.save({ new: true })
             res.status(201).send(user)
         } else {
-            next(createHttpError(402, "Email already used."))
+            next(createHttpError(401, "Email already used."))
         }
     } catch (error) {
-        next(error)
+        next(createHttpError(500, error))
         console.log(error)
     }
 })

@@ -64,6 +64,26 @@ DeviceRoute.get('/:deviceId', tokenMiddleware, async (req, res, next) => {
         next(error)
     }
 })
+DeviceRoute.get('/site/:siteId', tokenMiddleware, async (req, res, next) => {
+    try {
+        const devices = await Devices.find({site: req.params.siteId}).populate('deviceType').populate({
+            path: 'site',
+            populate: [
+                {
+                    path: 'admin',
+                    select: '-__v -_id',
+                },
+                {
+                    path: 'installer',
+                    select: '-__v -_id',
+                },
+            ],
+        })
+        res.status(200).send(devices)
+    } catch (error) {
+        next(error)
+    }
+})
 DeviceRoute.delete('/:deviceId', tokenMiddleware, async (req, res, next) => {
     try {
         const device = await Devices.findByIdAndDelete(req.params.deviceId)

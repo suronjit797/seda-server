@@ -12,6 +12,7 @@ import SiteLocationRoute from './src/services/siteLocation/routes.js'
 import documentRoute from './src/services/documents/routes.js'
 import DeviceTypeRoute from './src/services/deviceType/routes.js'
 import DeviceRoute from './src/services/devices/routes.js'
+import ElectricityTariffRoute from './src/services/electricityTariff/routes.js'
 
 const server = express()
 
@@ -29,6 +30,7 @@ server.use("/users", usersRoute)
 server.use("/device", DeviceRoute)
 server.use("/building-type",BuildingTypeRoute)
 server.use("/device-type",DeviceTypeRoute)
+server.use("/electricity-tariff",ElectricityTariffRoute)
 server.use("/site-location",SiteLocationRoute)
 server.use("/documents", documentRoute)
 
