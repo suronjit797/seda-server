@@ -135,7 +135,7 @@ DeviceRoute.get('/device-parameters/:deviceId', tokenMiddleware, async (req, res
         }
             
         ])
-        res.status(201).send(parameters)
+        res.status(200).send(parameters)
     } catch (error) {
         console.log(error)
     }
