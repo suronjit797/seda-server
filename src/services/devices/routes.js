@@ -28,65 +28,64 @@ DeviceRoute.get('/', tokenMiddleware, async (req, res, next) => {
 })
 DeviceRoute.get('/admin', tokenMiddleware, async (req, res, next) => {
     try {
+        let deviceForAdmin = []
         const sites = await SiteLocation.find({ admin: req.user._id })
-        console.log(sites)
-        if (sites.length > 0) {
-            sites.forEach(async (element) => {
-                const devices = await Devices.find({ site: element._id }).populate('deviceType').populate({
-                    path: 'site',
-                    populate: [
-                        {
-                            path: 'admin',
-                            select: '-__v -_id',
-                        },
-                        {
-                            path: 'installer',
-                            select: '-__v -_id',
-                        },
-                    ],
-                })
-                console.log(devices)
-                if (devices.length > 0) {
-                    res.status(200).send(devices)
-                } else {
-                    res.status(200).send([])
-                }
-            });
 
+        const getDevices = async (sites) => {
+            const devices = await Devices.find({ site: sites._id }).populate('deviceType').populate({
+                path: 'site',
+                populate: [
+                    {
+                        path: 'admin',
+                        select: '-__v -_id',
+                    },
+                    {
+                        path: 'installer',
+                        select: '-__v -_id',
+                    },
+                ],
+            })
+            if (devices) {
+                deviceForAdmin.push(devices)
+            }
         }
+        await Promise.all(sites.map(async (site) => {
+            await getDevices(site)
+        }));
+        res.status(200).send(deviceForAdmin)
 
     } catch (error) {
+        console.log(error)
         next(error)
     }
 })
 DeviceRoute.get('/installer', tokenMiddleware, async (req, res, next) => {
     try {
+        let deviceForInstaller = []
         const sites = await SiteLocation.find({ installer: req.user._id })
-        console.log(sites)
-        if (sites.length > 0) {
-            sites.forEach(async (element) => {
-                const devices = await Devices.find({ site: element._id }).populate('deviceType').populate({
-                    path: 'site',
-                    populate: [
-                        {
-                            path: 'admin',
-                            select: '-__v -_id',
-                        },
-                        {
-                            path: 'installer',
-                            select: '-__v -_id',
-                        },
-                    ],
-                })
-                console.log(devices)
-                if (devices.length > 0) {
-                    res.status(200).send(devices)
-                } else {
-                    res.status(200).send([])
-                }
-            });
 
+        const getDevices = async (sites) => {
+            const devices = await Devices.find({ site: sites._id }).populate('deviceType').populate({
+                path: 'site',
+                populate: [
+                    {
+                        path: 'admin',
+                        select: '-__v -_id',
+                    },
+                    {
+                        path: 'installer',
+                        select: '-__v -_id',
+                    },
+                ],
+            })
+            if (devices) {
+                deviceForAdmin.push(devices)
+            }
         }
+        await Promise.all(sites.map(async (site) => {
+            await getDevices(site)
+        }));
+        res.status(200).send(deviceForInstaller)
 
     } catch (error) {
         next(error)
