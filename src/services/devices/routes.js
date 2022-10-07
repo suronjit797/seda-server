@@ -3,7 +3,7 @@ import { apiKeyMiddleware, tokenMiddleware } from '../../utils/jwtAuth.js'
 import Devices from './schema.js'
 import DeviceData from './deviceDataSchema.js'
 import mongoose from 'mongoose'
-
+import SiteLocation from "../siteLocation/schema.js"
 const DeviceRoute = express.Router()
 
 DeviceRoute.get('/', tokenMiddleware, async (req, res, next) => {
@@ -22,6 +22,72 @@ DeviceRoute.get('/', tokenMiddleware, async (req, res, next) => {
             ],
         })
         res.status(200).send(devices)
+    } catch (error) {
+        next(error)
+    }
+})
+DeviceRoute.get('/admin', tokenMiddleware, async (req, res, next) => {
+    try {
+        const sites = await SiteLocation.find({ admin: req.user._id })
+        console.log(sites)
+        if (sites.length > 0) {
+            sites.forEach(async (element) => {
+                const devices = await Devices.find({ site: element._id }).populate('deviceType').populate({
+                    path: 'site',
+                    populate: [
+                        {
+                            path: 'admin',
+                            select: '-__v -_id',
+                        },
+                        {
+                            path: 'installer',
+                            select: '-__v -_id',
+                        },
+                    ],
+                })
+                console.log(devices)
+                if (devices.length > 0) {
+                    res.status(200).send(devices)
+                } else {
+                    res.status(200).send([])
+                }
+            });
+
+        }
+
+    } catch (error) {
+        next(error)
+    }
+})
+DeviceRoute.get('/installer', tokenMiddleware, async (req, res, next) => {
+    try {
+        const sites = await SiteLocation.find({ installer: req.user._id })
+        console.log(sites)
+        if (sites.length > 0) {
+            sites.forEach(async (element) => {
+                const devices = await Devices.find({ site: element._id }).populate('deviceType').populate({
+                    path: 'site',
+                    populate: [
+                        {
+                            path: 'admin',
+                            select: '-__v -_id',
+                        },
+                        {
+                            path: 'installer',
+                            select: '-__v -_id',
+                        },
+                    ],
+                })
+                console.log(devices)
+                if (devices.length > 0) {
+                    res.status(200).send(devices)
+                } else {
+                    res.status(200).send([])
+                }
+            });
+
+        }
+
     } catch (error) {
         next(error)
     }
@@ -66,7 +132,7 @@ DeviceRoute.get('/:deviceId', tokenMiddleware, async (req, res, next) => {
 })
 DeviceRoute.get('/site/:siteId', tokenMiddleware, async (req, res, next) => {
     try {
-        const devices = await Devices.find({site: req.params.siteId}).populate('deviceType').populate({
+        const devices = await Devices.find({ site: req.params.siteId }).populate('deviceType').populate({
             path: 'site',
             populate: [
                 {
@@ -111,7 +177,7 @@ DeviceRoute.post('/capture', apiKeyMiddleware, async (req, res, next) => {
 })
 DeviceRoute.get('/device-data/:deviceId', async (req, res, next) => {
     try {
-        const data = await DeviceData.find({device: req.params.deviceId})
+        const data = await DeviceData.find({ device: req.params.deviceId })
         res.status(201).send(data)
     } catch (error) {
         next(error)
@@ -127,13 +193,13 @@ DeviceRoute.get('/device-parameters/:deviceId', tokenMiddleware, async (req, res
                 $match: { "device": new mongoose.Types.ObjectId(req.params.deviceId) }
             },
             {
-                 $group: {
+                $group: {
                     "_id": "$name",
                     "device": { "$first": "$device" },  //$first accumulator
                     "count": { "$sum": 1 },  //$sum accumulator
+                }
             }
-        }
-            
+
         ])
         res.status(200).send(parameters)
     } catch (error) {

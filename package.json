@@ -1,7 +1,7 @@
 {
   "name": "ivis-api",
   "version": "1.0.0",
-  "description": "",
+  "description": "SEDA API",
   "main": "index.js",
   "type": "module",
   "scripts": {

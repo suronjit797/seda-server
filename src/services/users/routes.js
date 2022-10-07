@@ -7,7 +7,7 @@ import { saveToMedia, saveToUsers } from '../../utils/cloudinarySetup.js'
 import roleCheck from '../../utils/roleCheckerMiddleware.js'
 import sendEmail from '../../utils/sendEmail.js'
 import forgotPassword from '../../emails/forgotPassword.js'
-
+import SiteLocation from "../siteLocation/schema.js"
 
 const usersRoute = express.Router()
 const cookieAge = 30 * 24 * 60 * 60 * 1000 //30 days
@@ -100,40 +100,57 @@ usersRoute.post('/forgot-password', async (req, res, next) => {
         console.log(error)
     }
 });
-usersRoute.post('/reset-password-token',validTokenMiddleware, async(req, res, next)=>{
+usersRoute.post('/reset-password-token', validTokenMiddleware, async (req, res, next) => {
     try {
-        const {token} = req.body
-        if(token){
+        const { token } = req.body
+        if (token) {
             res.status(200).send("valid");
-        }else{
+        } else {
             next(createHttpError(401, "Reset Link not valid!"))
         }
     } catch (error) {
         console.log(error)
     }
 })
-usersRoute.put('/reset-password',validTokenMiddleware, async(req, res, next)=>{
+usersRoute.put('/reset-password', validTokenMiddleware, async (req, res, next) => {
     try {
         console.log(req.user)
-        const user= await Users.findByIdAndUpdate(req.user._id, req.body, { new: true })
-        if(user){
+        const user = await Users.findByIdAndUpdate(req.user._id, req.body, { new: true })
+        if (user) {
             res.status(200).send(user);
-        }else{
+        } else {
             next(createHttpError(401, "Reset Link not valid!"))
         }
     } catch (error) {
         console.log(error)
     }
 })
-
-
-
 
 //get current logged user data
 usersRoute.get('/me', tokenMiddleware, async (req, res, next) => {
     try {
         const userMe = await Users.findById(req.user._id).populate('site')
         res.status(200).send(userMe)
+    } catch (error) {
+        next(error)
+        console.log(error)
+    }
+});
+usersRoute.get('/me/installer', tokenMiddleware, async (req, res, next) => {
+    try {
+        let Installers = []
+        const sites = await SiteLocation.find({ admin: req.user._id }).populate('installer')
+        const getInstaller = async(sites)=>{
+            sites.forEach(async (site) => {
+                Installers.push(site.installer)
+            })
+        }
+        if(sites){
+           await getInstaller(sites)
+            res.status(200).send(Installers)
+        }else{
+            res.status(200).send([])
+        }
     } catch (error) {
         next(error)
         console.log(error)
