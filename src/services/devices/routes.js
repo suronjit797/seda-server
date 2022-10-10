@@ -79,7 +79,7 @@ DeviceRoute.get('/installer', tokenMiddleware, async (req, res, next) => {
                 ],
             })
             if (devices) {
-                deviceForAdmin.push(devices)
+                deviceForInstaller.push(devices)
             }
         }
         await Promise.all(sites.map(async (site) => {
@@ -88,6 +88,7 @@ DeviceRoute.get('/installer', tokenMiddleware, async (req, res, next) => {
         res.status(200).send(deviceForInstaller)
 
     } catch (error) {
+        console.log(error)
         next(error)
     }
 })
