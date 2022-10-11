@@ -140,15 +140,55 @@ usersRoute.get('/me/installer', tokenMiddleware, async (req, res, next) => {
     try {
         let Installers = []
         const sites = await SiteLocation.find({ admin: req.user._id }).populate('installer')
-        const getInstaller = async(sites)=>{
+        const getInstaller = async (sites) => {
             sites.forEach(async (site) => {
                 Installers.push(site.installer)
             })
         }
-        if(sites){
-           await getInstaller(sites)
+        if (sites) {
+            await getInstaller(sites)
             res.status(200).send(Installers)
-        }else{
+        } else {
+            res.status(200).send([])
+        }
+    } catch (error) {
+        next(error)
+        console.log(error)
+    }
+});
+usersRoute.get('/me/users', tokenMiddleware, async (req, res, next) => {
+    try {
+        let SiteUsers = []
+        const sites = await SiteLocation.find({ admin: req.user._id })
+        const getUsers=async(site)=>{
+            const usersOfSite = await Users.find({ $and: [{ role: 'user' }, { site: site._id }] }).populate('site')
+            SiteUsers.push(usersOfSite)
+        } 
+        const promise = sites.map((site)=> getUsers(site))
+        if (sites) {
+            await Promise.all(promise);
+            res.status(200).send(SiteUsers)
+        } else {
+            res.status(200).send([])
+        }
+    } catch (error) {
+        next(error)
+        console.log(error)
+    }
+});
+usersRoute.get('/me/public', tokenMiddleware, async (req, res, next) => {
+    try {
+        let SiteUsers = []
+        const sites = await SiteLocation.find({ admin: req.user._id })
+        const getUsers=async(site)=>{
+            const usersOfSite = await Users.find({ $and: [{ role: 'public' }, { site: site._id }] }).populate('site')
+            SiteUsers.push(usersOfSite)
+        } 
+        const promise = sites.map((site)=> getUsers(site))
+        if (sites) {
+            await Promise.all(promise);
+            res.status(200).send(SiteUsers)
+        } else {
             res.status(200).send([])
         }
     } catch (error) {
