@@ -15,7 +15,7 @@ const cookieAge = 30 * 24 * 60 * 60 * 1000 //30 days
 //this will be used by super admin to get all users
 usersRoute.get('/', tokenMiddleware, [roleCheck.isSuperAdmin], async (req, res, next) => {
     try {
-        const users = await Users.find({ "role": { "$ne": 'superAdmin' } })
+        const users = await Users.find({ "role": { "$ne": 'superAdmin' } }).populate('site')
         res.status(200).send(users)
     } catch (error) {
         next(error)
@@ -26,7 +26,6 @@ usersRoute.get('/', tokenMiddleware, [roleCheck.isSuperAdmin], async (req, res, 
 usersRoute.post('/', async (req, res, next) => {
     try {
         const user = await Users.findOne({ email: req.body.email })
-        console.log(user)
         if (!user) {
             const newUser = new Users(req.body)
             const user = await newUser.save({ new: true })
@@ -148,6 +147,26 @@ usersRoute.get('/me/installer', tokenMiddleware, async (req, res, next) => {
         if (sites) {
             await getInstaller(sites)
             res.status(200).send(Installers)
+        } else {
+            res.status(200).send([])
+        }
+    } catch (error) {
+        next(error)
+        console.log(error)
+    }
+});
+usersRoute.get('/me/allUsers', tokenMiddleware, async (req, res, next) => {
+    try {
+        let SiteUsers = []
+        const sites = await SiteLocation.find({ admin: req.user._id })
+        const getUsers=async(site)=>{
+            const usersOfSite = await Users.find({ site: site._id  }).populate('site')
+            SiteUsers.push(usersOfSite)
+        } 
+        const promise = sites.map((site)=> getUsers(site))
+        if (sites) {
+            await Promise.all(promise);
+            res.status(200).send(SiteUsers)
         } else {
             res.status(200).send([])
         }
@@ -302,7 +321,7 @@ usersRoute.get('/role/:role', tokenMiddleware, async (req, res, next) => {
     }
 })
 //only super admin can delete a user
-usersRoute.delete('/:userId', tokenMiddleware, [roleCheck.isSuperAdmin], async (req, res, next) => {
+usersRoute.delete('/:userId', tokenMiddleware,  async (req, res, next) => {
     try {
         const updateUser = await Users.findByIdAndDelete(req.params.userId)
         res.status(204).send('deleted')
