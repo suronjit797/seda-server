@@ -45,10 +45,11 @@ const forgotPassword = (name, link) => {
                                         <td style="padding:0px;color:#153643;">
                                             <h1 style="font-size:18px;margin:0 0 20px 0;font-family:Arial,sans-serif;">
                                                Dear ${name},</h1>
-                                            <p
-                                                style="margin:0 0 12px 0;font-size:16px;line-height:24px;font-family:Arial,sans-serif;">
-                                                Someone recently requested a password reset for your SEDA OEMCP account
-                                                registered using this email address.</p>
+                                               <p style="margin:0 0 12px 0;font-size:16px;line-height:24px;font-family:Arial,sans-serif;">
+                                               Seems like you forgot your password for SEDA OEMS.
+                                               </p>
+                                            <p style="margin:0 0 12px 0;font-size:16px;line-height:24px;font-family:Arial,sans-serif;">
+                                                If you didn't make this request, just ignore this email. Otherwise, you can reset your password.</p>
                                             <h3 style="font-size:15px;font-family:Arial,sans-serif;">Click Link to Reset
                                                 Password:</h3>
                                             <p
@@ -60,6 +61,7 @@ const forgotPassword = (name, link) => {
                                                 for A Password Reset:</h3>
                                             <p style="font-size:16px;font-family:Arial,sans-serif;">You can ignore this
                                                 email.</p>
+                                            <p style="font-size:16px;font-family:Arial,sans-serif;">Best Regards,</p>
                                         </td>
                                     </tr>
                                 </table>
@@ -87,10 +89,10 @@ const forgotPassword = (name, link) => {
                                                             SEDA Online Energy Monitoring Cloud Platform</p>
                                                         <p
                                                             style="font-size:16px;font-family:Arial,sans-serif;padding:0px;margin:0px;">
-                                                            Customer Care Line : +6016-3870749 (WhatsApp)</p>
+                                                            Customer Care Line : +603 8870 5800</p>
                                                         <p
                                                             style="font-size:16px;font-family:Arial,sans-serif;padding:0px;margin:0px;">
-                                                            Customer Care Email : oemcp@seda.gov.my</p>
+                                                            Customer Care Email : <a href="mailto:tech@seda.gov.my">tech@seda.gov.my</a></p>
                                                     </td>
     
                                                 </tr>
@@ -98,10 +100,10 @@ const forgotPassword = (name, link) => {
                                         </td>
                                     </tr>
                                 </table>
-                                <table>
+                                <table style="margin-top:20px">
                                     <tr>
                                         <td>
-                                            <h3 style="font-size:15px;font-family:Arial,sans-serif;margin:0px">
+                                            <h3 style="font-size:15px;font-family:Arial,sans-serif;margin:0px;">
                                                 Sustainable Energy Development Authority (SEDA) Malaysia</h3>
                                         </td>
                                     </tr>
