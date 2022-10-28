@@ -13,10 +13,12 @@ import documentRoute from './src/services/documents/routes.js'
 import DeviceTypeRoute from './src/services/deviceType/routes.js'
 import DeviceRoute from './src/services/devices/routes.js'
 import ElectricityTariffRoute from './src/services/electricityTariff/routes.js'
+import ParameterRoute from './src/services/SystemParameters/routes.js'
+import FormulaRoute from './src/services/formulas/routes.js'
 
 const server = express()
 
-// ******************** MIDDLEWARES ******************
+// ******************** MIDDLEWARE ******************
 server.use(cors(corsConfig));
 server.use(express.json())
 server.use(cookieParser())
@@ -33,7 +35,8 @@ server.use("/device-type",DeviceTypeRoute)
 server.use("/electricity-tariff",ElectricityTariffRoute)
 server.use("/site-location",SiteLocationRoute)
 server.use("/documents", documentRoute)
-
+server.use("/parameters", ParameterRoute)
+server.use("/formula", FormulaRoute)
 // ******************* ERROR HANDLERS ******************
 server.use(errors.notFound)
 server.use(errors.badRequest)
