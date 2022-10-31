@@ -4,6 +4,7 @@ import Devices from './schema.js'
 import DeviceData from './deviceDataSchema.js'
 import mongoose from 'mongoose'
 import SiteLocation from "../siteLocation/schema.js"
+import createHttpError from 'http-errors'
 const DeviceRoute = express.Router()
 
 DeviceRoute.get('/', tokenMiddleware, async (req, res, next) => {
@@ -94,9 +95,17 @@ DeviceRoute.get('/installer', tokenMiddleware, async (req, res, next) => {
 })
 DeviceRoute.post('/', tokenMiddleware, async (req, res, next) => {
     try {
-        const newDevice = new Devices(req.body)
-        const device = await newDevice.save({ new: true })
-        res.status(201).send(device)
+        const { apiKey } = req.body
+        const devices = await Devices.find({ apiKey: apiKey })
+        console.log(devices)
+        if (!devices.length>0) {
+            const newDevice = new Devices(req.body)
+            const device = await newDevice.save({ new: true })
+            res.status(201).send(device)
+        } else {
+            next(createHttpError(401, "API Key already Used."))
+        }
+
     } catch (error) {
         next(error)
     }
