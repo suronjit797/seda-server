@@ -97,7 +97,6 @@ DeviceRoute.post('/', tokenMiddleware, async (req, res, next) => {
     try {
         const { apiKey } = req.body
         const devices = await Devices.find({ apiKey: apiKey })
-        console.log(devices)
         if (!devices.length>0) {
             const newDevice = new Devices(req.body)
             const device = await newDevice.save({ new: true })
