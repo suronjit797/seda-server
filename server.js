@@ -17,6 +17,7 @@ import ParameterRoute from './src/services/SystemParameters/routes.js'
 import FormulaRoute from './src/services/formulas/routes.js'
 import DeviceFormulaRoute from './src/services/devices/DeviceFormulaRoutes.js'
 import ChartRoute from './src/services/charts/routes.js'
+import ReportRoute from './src/services/reports/routes.js'
 
 const server = express()
 
@@ -41,6 +42,7 @@ server.use("/parameters", ParameterRoute)
 server.use("/formula", FormulaRoute)
 server.use("/assignFormula", DeviceFormulaRoute)
 server.use("/chart", ChartRoute)
+server.use("/report", ReportRoute)
 // ******************* ERROR HANDLERS ******************
 server.use(errors.notFound)
 server.use(errors.badRequest)
