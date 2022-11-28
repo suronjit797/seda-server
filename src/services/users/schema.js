@@ -15,6 +15,7 @@ const userSchema = new Schema({
     isActive: { type: Boolean, default: true },
     logo: { type: String },
     avatar: { type: String },
+    dashboard: { type: Number, default: 1 },
     lastLogin:{type: Date}
 }, {
     timestamps: true

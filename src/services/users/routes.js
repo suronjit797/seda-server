@@ -65,13 +65,18 @@ usersRoute.post('/login', async (req, res, next) => {
         const { email, password } = req.body
         const user = await Users.checkCredentials(email, password)
         if (user) {
-            const token = await generateJWTToken(user)
-            res.cookie("token", token, {
-                httpOnly: true,
-                maxAge: cookieAge,
-            })
-            const updateUser = await Users.findByIdAndUpdate(user._id, { lastLogin: new Date() })
-            res.status(200).send(token)
+            if (!user?.isActive) {
+                next(createHttpError(401, "Account not active!"))
+            } else {
+                const token = await generateJWTToken(user)
+                res.cookie("token", token, {
+                    httpOnly: true,
+                    maxAge: cookieAge,
+                })
+                const updateUser = await Users.findByIdAndUpdate(user._id, { lastLogin: new Date() })
+                res.status(200).send(token)
+            }
+
         } else {
             next(createHttpError(401, "Credentials information wrong!"))
         }
@@ -159,11 +164,11 @@ usersRoute.get('/me/allUsers', tokenMiddleware, async (req, res, next) => {
     try {
         let SiteUsers = []
         const sites = await SiteLocation.find({ admin: req.user._id })
-        const getUsers=async(site)=>{
-            const usersOfSite = await Users.find({ site: site._id  }).populate('site')
+        const getUsers = async (site) => {
+            const usersOfSite = await Users.find({ site: site._id }).populate('site')
             SiteUsers.push(usersOfSite)
-        } 
-        const promise = sites.map((site)=> getUsers(site))
+        }
+        const promise = sites.map((site) => getUsers(site))
         if (sites) {
             await Promise.all(promise);
             res.status(200).send(SiteUsers)
@@ -179,11 +184,11 @@ usersRoute.get('/me/users', tokenMiddleware, async (req, res, next) => {
     try {
         let SiteUsers = []
         const sites = await SiteLocation.find({ admin: req.user._id })
-        const getUsers=async(site)=>{
+        const getUsers = async (site) => {
             const usersOfSite = await Users.find({ $and: [{ role: 'user' }, { site: site._id }] }).populate('site')
             SiteUsers.push(usersOfSite)
-        } 
-        const promise = sites.map((site)=> getUsers(site))
+        }
+        const promise = sites.map((site) => getUsers(site))
         if (sites) {
             await Promise.all(promise);
             res.status(200).send(SiteUsers)
@@ -199,11 +204,11 @@ usersRoute.get('/me/public', tokenMiddleware, async (req, res, next) => {
     try {
         let SiteUsers = []
         const sites = await SiteLocation.find({ admin: req.user._id })
-        const getUsers=async(site)=>{
+        const getUsers = async (site) => {
             const usersOfSite = await Users.find({ $and: [{ role: 'public' }, { site: site._id }] }).populate('site')
             SiteUsers.push(usersOfSite)
-        } 
-        const promise = sites.map((site)=> getUsers(site))
+        }
+        const promise = sites.map((site) => getUsers(site))
         if (sites) {
             await Promise.all(promise);
             res.status(200).send(SiteUsers)
@@ -321,7 +326,7 @@ usersRoute.get('/role/:role', tokenMiddleware, async (req, res, next) => {
     }
 })
 //only super admin can delete a user
-usersRoute.delete('/:userId', tokenMiddleware,  async (req, res, next) => {
+usersRoute.delete('/:userId', tokenMiddleware, async (req, res, next) => {
     try {
         const updateUser = await Users.findByIdAndDelete(req.params.userId)
         res.status(204).send('deleted')
