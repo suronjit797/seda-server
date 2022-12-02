@@ -65,7 +65,7 @@ usersRoute.post('/login', async (req, res, next) => {
         const { email, password } = req.body
         const user = await Users.checkCredentials(email, password)
         if (user) {
-            if (!user?.isActive) {
+            if (!user.isActive) {
                 next(createHttpError(401, "Account not active!"))
             } else {
                 const token = await generateJWTToken(user)
@@ -94,7 +94,7 @@ usersRoute.post('/forgot-password', async (req, res, next) => {
             const token = await generateJWTToken(user)
             const link = `${process.env.FE_DEV_TRUST_BACKEND_URL}/reset-password/${token}`;
             const body = forgotPassword(user.name, link)
-            await sendEmail(user?.email, "SEDA Online Energy Monitoring System (OEMS) Password Reset", body);
+            await sendEmail(user.email, "SEDA Online Energy Monitoring System (OEMS) Password Reset", body);
             res.status(200).send("password reset link sent to your email account");
         } else {
             next(createHttpError(401, "Email address not found!"))

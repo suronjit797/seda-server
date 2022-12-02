@@ -122,7 +122,7 @@ ReportRoute.post('/DeviceComparison', tokenMiddleware, async (req, res, next) =>
             {
                 $project: {
                     _id: 1,
-                    name: { $concat : [ device?.name, " - ", "$name" ] },
+                    name: { $concat : [ device.name, " - ", "$name" ] },
                     value: '$value',
                     average: ('$first_close' / '$last_close') * 100
                 }
@@ -142,7 +142,7 @@ ReportRoute.post('/DeviceComparison', tokenMiddleware, async (req, res, next) =>
                 value.push(parseInt(element.value))
                 date.push(element._id)
             });
-            FinalResult.push({ name: `${device?.name} - ${parameter1}`, data: value, date: date })
+            FinalResult.push({ name: `${device.name} - ${parameter1}`, data: value, date: date })
         }
 
         // device 2
@@ -180,7 +180,7 @@ ReportRoute.post('/DeviceComparison', tokenMiddleware, async (req, res, next) =>
             {
                 $project: {
                     _id: 1,
-                    name: { $concat : [ device2data?.name, " - ", "$name" ] },
+                    name: { $concat : [ device2data.name, " - ", "$name" ] },
                     value: '$value',
                     average: ('$first_close' / '$last_close') * 100
                 }
@@ -200,7 +200,7 @@ ReportRoute.post('/DeviceComparison', tokenMiddleware, async (req, res, next) =>
                 value.push(parseInt(element.value))
                 date.push(element._id)
             });
-            FinalResult.push({ name: `${device2data?.name} - ${parameter1}`, data: value, date: date })
+            FinalResult.push({ name: `${device2data.name} - ${parameter1}`, data: value, date: date })
         }
         res.status(200).send({ result: FinalResult, data: tableData })
     } catch (error) {
