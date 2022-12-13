@@ -8,6 +8,7 @@ const deviceSchema = new Schema({
     serial:{type: String},
     apiKey:{type: String, required: true, unique: true },
     site: {type: Schema.Types.ObjectId, ref: "SiteLocation", required: true},
+    parameter: {type: String}
 }, {
     timestamps: true
 })

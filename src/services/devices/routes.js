@@ -5,6 +5,8 @@ import DeviceData from './deviceDataSchema.js'
 import mongoose from 'mongoose'
 import SiteLocation from "../siteLocation/schema.js"
 import createHttpError from 'http-errors'
+import Formula from '../formulas/schema.js'
+
 const DeviceRoute = express.Router()
 
 DeviceRoute.get('/', tokenMiddleware, async (req, res, next) => {
@@ -97,7 +99,7 @@ DeviceRoute.post('/', tokenMiddleware, async (req, res, next) => {
     try {
         const { apiKey } = req.body
         const devices = await Devices.find({ apiKey: apiKey })
-        if (!devices.length>0) {
+        if (!devices.length > 0) {
             const newDevice = new Devices(req.body)
             const device = await newDevice.save({ new: true })
             res.status(201).send(device)
@@ -173,6 +175,115 @@ DeviceRoute.post('/capture', apiKeyMiddleware, async (req, res, next) => {
         req.body.device = req.device._id
         let array = req.body
         let updateArray = array.map(obj => ({ ...obj, device: req.device._id }))
+
+        const formulas = await Formula.find({ device: req.device._id })
+        await formulas.map((item) => {
+            let FormulaValue = 0;
+            let data;
+            let p1, p2, p3, p4, p5;
+            switch (item.formulaParts.selectOne) {
+                case "parameter":
+                    let filter = updateArray.filter((data) => data.name === item.formulaParts.valueOne)
+                    p1 = parseFloat(filter[0].value).toFixed(2)
+                    break;
+                default:
+                    p1=0;
+                    break;
+            }
+            switch (item.formulaParts.selectTwo) {
+                case "parameter":
+                    let filter = updateArray.filter((data) => data.name === item.formulaParts.valueTwo)
+                    p2 = parseFloat(filter[0].value).toFixed(2);
+                    break;
+                case "operator":
+                    switch (item.formulaParts.valueTwo) {
+                        case "+": p2 = '+';
+                            break;
+                        case "-": p2 = '-';
+                            break;
+                        case "x": p2 = '*';
+                            break;
+                        case "/": p2 = '/';
+                            break;
+                    }
+                    break;
+                default:
+                    p2=0;
+                    break;
+            }
+            switch (item.formulaParts.selectThree) {
+                case "parameter":
+                    let filter = updateArray.filter((data) => data.name === item.formulaParts.valueThree)
+                    p3 = parseFloat(filter[0].value).toFixed(2);
+                    break;
+                case "operator":
+                    switch (item.formulaParts.valueThree) {
+                        case "+": p3 = '+';
+                            break;
+                        case "-": p3 = '-';
+                            break;
+                        case "x": p3 = '*';
+                            break;
+                        case "/": p3 = '/';
+                            break;
+                    }
+                    break;
+                default:
+                    p3=0;
+                    break;
+            }
+            switch (item.formulaParts.selectFour) {
+                case "parameter":
+                    let filter = updateArray.filter((data) => data.name === item.formulaParts.valueFour)
+                    p4 = parseFloat(filter[0].value).toFixed(2);
+                    break;
+                case "operator":
+                    switch (item.formulaParts.valueFour) {
+                        case "+": p4 = '+';
+                            break;
+                        case "-": p4 = '-';
+                            break;
+                        case "x": p4 = '*';
+                            break;
+                        case "/": p4 = '/';
+                            break;
+                    }
+                    break;
+                default:
+                    p4=0;
+                    break;
+            }
+            switch (item.formulaParts.selectFive) {
+                case "parameter":
+                    let filter = updateArray.filter((data) => data.name === item.formulaParts.valueFive)
+                    p5 = parseFloat(filter[0].value).toFixed(2);
+                    break;
+                case "operator":
+                    switch (item.formulaParts.valueFive) {
+                        case "+": p5 = '+';
+                            break;
+                        case "-": p5 = '-';
+                            break;
+                        case "x": p5 = '*';
+                            break;
+                        case "/": p5 = '/';
+                            break;
+                    }
+                    break;
+                default:
+                    p5=0;
+                    break;
+            }
+            FormulaValue = eval(p1 + p2 + p3 + p4 + p5)
+            data ={
+                name: item.name,
+                value: FormulaValue,
+                date: new Date(),
+                device: req.device._id
+            }
+            updateArray.push(data)
+        })
+
         await updateArray.map((item) => {
             const newDeviceData = new DeviceData(item)
             const deviceData = newDeviceData.save({ new: true })

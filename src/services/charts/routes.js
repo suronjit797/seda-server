@@ -21,4 +21,75 @@ ChartRoute.get('/byParameter/:deviceId/:parameter', async (req, res, next) => {
     }
 })
 
+ChartRoute.get('/monthlyKWH/:deviceId/:parameter', async (req, res, next) => {
+    try {
+        let year = new Date().getFullYear()
+        let data = []
+        const deviceData = await deviceDataSchema.aggregate([
+            {
+                $match: {
+                    device: req.params.deviceId,
+                    name: req.params.parameter,
+                    date: { $gt: new Date(`${year}-01-01`) }
+                }
+            },
+            {
+                $group: {
+                    _id: {
+                        month: {
+                            $month: "$date"
+                        },
+                        name: "$name",
+                    },
+                    value: {
+                        $sum: "$value"
+                    },
+
+                }
+            },
+            {
+                $project: {
+                    value: "$value",
+                    monthNo: "$_id.month",
+                    Month: {
+                        $arrayElemAt: [
+                            [
+                                "",
+                                "Jan",
+                                "Feb",
+                                "Mar",
+                                "Apr",
+                                "May",
+                                "Jun",
+                                "Jul",
+                                "Aug",
+                                "Sep",
+                                "Oct",
+                                "Nov",
+                                "Dec"
+                            ],
+                            "$_id.month"
+                        ]
+                    },
+
+                }
+            }
+        ])
+        console.log(deviceData)
+        let i = 1
+        for (i; i <= 12; i++) {
+            let filterData = deviceData.filter(e => e.monthNo === i)
+            if (filterData.length > 0) {
+                data.push(filterData[0].value)
+            } else {
+                data.push(0)
+            }
+        }
+        res.status(200).send(data);
+    } catch (error) {
+        next(error)
+        console.log(error)
+    }
+})
+
 export default ChartRoute;

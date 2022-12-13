@@ -314,6 +314,36 @@ usersRoute.put('/:userId/logoUpload', tokenMiddleware, [roleCheck.isSuperAdmin],
         console.log(error)
     }
 });
+//this will be used by super admin to get all users
+usersRoute.get('/siteUser/:site/:role', tokenMiddleware, async (req, res, next) => {
+    try {
+        let users=[]
+        switch (req.params.role) {
+            case "admin":
+                let siteAdmin = await SiteLocation.findById(req.params.site).populate('admin')
+                users.push(siteAdmin.admin)
+                break;
+            case "installer":
+                let siteInstaller = await SiteLocation.findById(req.params.site).populate('installer')
+                users.push(siteInstaller.installer)
+                break;
+            case "user":
+                users = await Users.find({ role: req.params.role, site: req.params.site })
+                break;
+            case "user":
+                users = await Users.find({ role: req.params.role, site: req.params.site })
+                break;
+            default:
+                break;
+        }
+        res.status(200).send(users)
+    } catch (error) {
+        next(error)
+        console.log(error)
+    }
+})
+
+
 
 //this will be used by super admin to get all users
 usersRoute.get('/role/:role', tokenMiddleware, async (req, res, next) => {
