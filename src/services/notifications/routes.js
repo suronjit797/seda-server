@@ -33,9 +33,10 @@ NotificationRoute.get('/', tokenMiddleware, async (req, res, next) => {
         next(error)
     }
 })
+
 NotificationRoute.get('/assign', tokenMiddleware, async (req, res, next) => {
     try {
-        const assignedAlarm = await AssignAlarm.find().populate('user').populate('alarm')
+        const assignedAlarm = await AssignAlarm.find().populate('site').populate('alarm')
         res.status(200).send(assignedAlarm)
     } catch (error) {
         next(error)
@@ -61,6 +62,36 @@ NotificationRoute.post('/assign', tokenMiddleware, async (req, res, next) => {
         next(error)
     }
 })
+
+NotificationRoute.get('/site/:siteId', tokenMiddleware, async (req, res, next) => {
+    try {
+        const notifications = await Notifications.find({ site: req.params.siteId }).populate({
+            path: 'site',
+            populate: [
+                {
+                    path: 'admin',
+                    select: '-__v -_id',
+                },
+                {
+                    path: 'installer',
+                    select: '-__v -_id',
+                },
+            ],
+        }).populate({
+            path: 'device',
+            populate: [
+                {
+                    path: 'deviceType',
+                    select: '-__v -_id',
+                }
+            ],
+        })
+        res.status(200).send(notifications)
+    } catch (error) {
+        next(error)
+    }
+})
+
 NotificationRoute.get('/:id', tokenMiddleware, async (req, res, next) => {
     try {
         const notifications = await Notifications.findById(req.params.id).populate({
