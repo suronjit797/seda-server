@@ -130,9 +130,27 @@ NotificationRoute.put('/:id', tokenMiddleware, async (req, res, next) => {
     }
 })
 
+NotificationRoute.put('/assign/:id', tokenMiddleware, async (req, res, next) => {
+    try {
+        const updateNotification = await AssignAlarm.findByIdAndUpdate(req.params.id, req.body, { new: true })
+        res.status(200).send(updateNotification)
+    } catch (error) {
+        next(error)
+    }
+})
+
 NotificationRoute.delete('/:id', tokenMiddleware, async (req, res, next) => {
     try {
         const updateType = await Notifications.findByIdAndDelete(req.params.id)
+        res.status(204).send('deleted')
+    } catch (error) {
+        next(error)
+    }
+})
+
+NotificationRoute.delete('/assign/:id', tokenMiddleware, async (req, res, next) => {
+    try {
+        const updateType = await AssignAlarm.findByIdAndDelete(req.params.id)
         res.status(204).send('deleted')
     } catch (error) {
         next(error)
