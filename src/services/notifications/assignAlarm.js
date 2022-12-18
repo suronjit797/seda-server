@@ -7,6 +7,7 @@ const AssignAlarmSchema = new Schema({
     email: {type: String, match: /.+\@.+\..+/},
     role: { type: String, required: true, enum: ["installer", "admin", "user", "public", "external"], default: "external" },
     site:{type: Schema.Types.ObjectId, ref: "SiteLocation", required: true},
+    user:{type: Schema.Types.ObjectId, ref: "Users",},
     alarm: {type: Schema.Types.ObjectId, ref: "Notifications", required: true},
     isActive: { type: Boolean, default: true },
 }, {
