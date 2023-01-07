@@ -1,5 +1,7 @@
 import express from 'express'
 import deviceDataSchema from "../devices/deviceDataSchema.js"
+import mongoose from 'mongoose'
+const ObjectId = mongoose.Types.ObjectId;
 
 const ChartRoute = express.Router()
 
@@ -28,8 +30,9 @@ ChartRoute.get('/monthlyKWH/:deviceId/:parameter', async (req, res, next) => {
         const deviceData = await deviceDataSchema.aggregate([
             {
                 $match: {
-                    device: req.params.deviceId,
+                    device: ObjectId(req.params.deviceId),
                     name: req.params.parameter,
+                    // date: { $gt: new Date(`2022-01-01`) }
                     date: { $gt: new Date(`${year}-01-01`) }
                 }
             },
@@ -42,9 +45,8 @@ ChartRoute.get('/monthlyKWH/:deviceId/:parameter', async (req, res, next) => {
                         name: "$name",
                     },
                     value: {
-                        $sum: "$value"
+                        $sum: { $toDouble: '$value' }
                     },
-
                 }
             },
             {
@@ -80,7 +82,7 @@ ChartRoute.get('/monthlyKWH/:deviceId/:parameter', async (req, res, next) => {
         for (i; i <= 12; i++) {
             let filterData = deviceData.filter(e => e.monthNo === i)
             if (filterData.length > 0) {
-                data.push(filterData[0].value)
+                data.push(Math.round(filterData[0].value))
             } else {
                 data.push(0)
             }

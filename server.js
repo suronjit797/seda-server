@@ -5,7 +5,7 @@ import mongoose from 'mongoose'
 import cors from "cors"
 import cookieParser from "cookie-parser"
 import errors from './src/utils/errorHandlers.js'
-import {port, corsConfig} from './src/utils/serverConfig.js'
+import { port, corsConfig } from './src/utils/serverConfig.js'
 import usersRoute from './src/services/users/routes.js'
 import BuildingTypeRoute from './src/services/buildingType/routes.js'
 import SiteLocationRoute from './src/services/siteLocation/routes.js'
@@ -28,15 +28,15 @@ server.use(cookieParser())
 server.set('trust proxy', 1)
 
 // ******************* Static Page ***********************
-server.use(express.static('./', {index: 'index.html'}))
+server.use(express.static('./', { index: 'index.html' }))
 
 // ******************* ROUTES ***********************
 server.use("/users", usersRoute)
 server.use("/device", DeviceRoute)
-server.use("/building-type",BuildingTypeRoute)
-server.use("/device-type",DeviceTypeRoute)
-server.use("/electricity-tariff",ElectricityTariffRoute)
-server.use("/site-location",SiteLocationRoute)
+server.use("/building-type", BuildingTypeRoute)
+server.use("/device-type", DeviceTypeRoute)
+server.use("/electricity-tariff", ElectricityTariffRoute)
+server.use("/site-location", SiteLocationRoute)
 server.use("/documents", documentRoute)
 server.use("/parameters", ParameterRoute)
 server.use("/formula", FormulaRoute)
