@@ -176,15 +176,17 @@ DeviceRoute.post('/capture', apiKeyMiddleware, async (req, res, next) => {
         let array = req.body
         let updateArray = array.map(obj => ({ ...obj, device: req.device._id }))
 
+
         const formulas = await Formula.find({ device: req.device._id })
-        await formulas.map((item) => {
+        formulas.map((item) => {
             let FormulaValue = 0;
             let data;
             let p1, p2, p3, p4, p5;
             switch (item.formulaParts.selectOne) {
                 case "parameter":
                     let filter = updateArray.filter((data) => data.name === item.formulaParts.valueOne)
-                    p1 = parseFloat(filter[0].value).toFixed(2)
+                    return console.log(filter)
+                    p1 = parseFloat(filter[0].value).toFixed(2)   // value number asse na
                     break;
                 default:
                     p1=0;
@@ -286,7 +288,8 @@ DeviceRoute.post('/capture', apiKeyMiddleware, async (req, res, next) => {
 
         await updateArray.map((item) => {
             const newDeviceData = new DeviceData(item)
-            const deviceData = newDeviceData.save({ new: true })
+            console.log(newDeviceData)
+            // const deviceData = newDeviceData.save({ new: true })
         })
         res.status(201).send("Device data save successfully")
     } catch (error) {
@@ -318,7 +321,6 @@ DeviceRoute.get('/device-parameters/:deviceId', tokenMiddleware, async (req, res
                     "count": { "$sum": 1 },  //$sum accumulator
                 }
             }
-
         ])
         res.status(200).send(parameters)
     } catch (error) {

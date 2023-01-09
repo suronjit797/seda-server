@@ -1,6 +1,7 @@
 import express from 'express'
 import deviceDataSchema from "../devices/deviceDataSchema.js"
 import mongoose from 'mongoose'
+import moment from 'moment'
 const ObjectId = mongoose.Types.ObjectId;
 
 const ChartRoute = express.Router()
@@ -23,17 +24,23 @@ ChartRoute.get('/byParameter/:deviceId/:parameter', async (req, res, next) => {
     }
 })
 
-ChartRoute.get('/monthlyKWH/:deviceId/:parameter', async (req, res, next) => {
+ChartRoute.get('/monthlyKWH/:deviceId/:parameter/:from/:to', async (req, res, next) => {
     try {
+
+        let { deviceId, parameter, from, to } = req.params
+        // let year = new Date().getFullYear()
         let year = new Date().getFullYear()
         let data = []
         const deviceData = await deviceDataSchema.aggregate([
             {
                 $match: {
-                    device: ObjectId(req.params.deviceId),
-                    name: req.params.parameter,
+                    device: ObjectId(deviceId),
+                    name: parameter,
                     // date: { $gt: new Date(`2022-01-01`) }
-                    date: { $gt: new Date(`${year}-01-01`) }
+                    date: {
+                        $gte: new Date(from),
+                        $lte: new Date(to)
+                    }
                 }
             },
             {
@@ -77,7 +84,6 @@ ChartRoute.get('/monthlyKWH/:deviceId/:parameter', async (req, res, next) => {
                 }
             }
         ])
-        console.log(deviceData)
         let i = 1
         for (i; i <= 12; i++) {
             let filterData = deviceData.filter(e => e.monthNo === i)
@@ -88,6 +94,78 @@ ChartRoute.get('/monthlyKWH/:deviceId/:parameter', async (req, res, next) => {
             }
         }
         res.status(200).send(data);
+    } catch (error) {
+        next(error)
+        console.log(error)
+    }
+})
+
+ChartRoute.get('/dailyConsumption/:deviceId/:parameter', async (req, res, next) => {
+    try {
+
+        // let date = moment('2022-12-06').format('YYYY-MM-DD');
+        let date = moment().format('YYYY-MM-DD');
+        let { deviceId, parameter } = req.params
+
+        const data = await deviceDataSchema.aggregate([
+            {
+                $match: {
+                    device: ObjectId(deviceId),
+                    name: parameter,
+                    date: {
+                        $gte: new Date(`${date}T00:00:00`),
+                        $lte: new Date(`${date}T23:59:59`)
+                    }
+                }
+            },
+            {
+                $group: {
+                    _id: {
+                        date,
+                        name: "$name",
+                    },
+                    value: {
+                        $sum: { $toDouble: '$value' }
+                    },
+                }
+            },
+        ])
+        res.status(200).send(data[0]);
+    } catch (error) {
+        next(error)
+        console.log(error)
+    }
+})
+ChartRoute.get('/buildingPower/:deviceId/:parameter', async (req, res, next) => {
+    try {
+
+        // let date = moment('2022-12-06').format('YYYY-MM-DD');
+        let date = moment().format('YYYY-MM-DD');
+
+        const data = await deviceDataSchema.aggregate([
+            {
+                $match: {
+                    device: ObjectId(req.params.deviceId),
+                    name: req.params.parameter,
+                    date: {
+                        $gte: new Date(`${date}T00:00:00`),
+                        $lte: new Date(`${date}T23:59:59`)
+                    }
+                }
+            },
+            {
+                $group: {
+                    _id: {
+                        date,
+                        name: "$name",
+                    },
+                    value: {
+                        $sum: { $toDouble: '$value' }
+                    },
+                }
+            },
+        ])
+        res.status(200).send(data[0]);
     } catch (error) {
         next(error)
         console.log(error)
