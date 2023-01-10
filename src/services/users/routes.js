@@ -7,6 +7,7 @@ import { saveToMedia, saveToUsers } from '../../utils/cloudinarySetup.js'
 import roleCheck from '../../utils/roleCheckerMiddleware.js'
 import sendEmail from '../../utils/sendEmail.js'
 import forgotPassword from '../../emails/forgotPassword.js'
+import addNewInstaller from '../../emails/addNewInstaller.js'
 import SiteLocation from "../siteLocation/schema.js"
 
 const usersRoute = express.Router()
@@ -25,10 +26,15 @@ usersRoute.get('/', tokenMiddleware, [roleCheck.isSuperAdmin], async (req, res, 
 
 usersRoute.post('/', async (req, res, next) => {
     try {
+
+        
         const user = await Users.findOne({ email: req.body.email })
         if (!user) {
             const newUser = new Users(req.body)
             const user = await newUser.save({ new: true })
+            let title = 'We Have Received Your Installer Registration on SEDA Online Energy Monitoring System (OEMS) ! '
+            let body = addNewInstaller(newUser.name, newUser._id)
+            await sendEmail(req.body.email, title, body);
             res.status(201).send(user)
         } else {
             next(createHttpError(401, "Email already used."))

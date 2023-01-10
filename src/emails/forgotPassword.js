@@ -44,10 +44,10 @@ const forgotPassword = (name, link) => {
                                     <tr>
                                         <td style="padding:0px;color:#153643;">
                                             <h1 style="font-size:18px;margin:0 0 20px 0;font-family:Arial,sans-serif;">
-                                               Dear ${name},</h1>
-                                               <p style="margin:0 0 12px 0;font-size:16px;line-height:24px;font-family:Arial,sans-serif;">
-                                               Seems like you forgot your password for SEDA OEMS.
-                                               </p>
+                                                Dear ${name},</h1>
+                                                <p style="margin:0 0 12px 0;font-size:16px;line-height:24px;font-family:Arial,sans-serif;">
+                                                Seems like you forgot your password for SEDA OEMS.
+                                                </p>
                                             <p style="margin:0 0 12px 0;font-size:16px;line-height:24px;font-family:Arial,sans-serif;">
                                                 If you didn't make this request, just ignore this email. Otherwise, you can reset your password.</p>
                                             <h3 style="font-size:15px;font-family:Arial,sans-serif;">Click Link to Reset

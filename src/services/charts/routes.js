@@ -1,5 +1,6 @@
 import express from 'express'
 import deviceDataSchema from "../devices/deviceDataSchema.js"
+import Devices from '../devices/schema.js'
 import mongoose from 'mongoose'
 import moment from 'moment'
 const ObjectId = mongoose.Types.ObjectId;
@@ -28,8 +29,7 @@ ChartRoute.get('/monthlyKWH/:deviceId/:parameter/:from/:to', async (req, res, ne
     try {
 
         let { deviceId, parameter, from, to } = req.params
-        // let year = new Date().getFullYear()
-        let year = new Date().getFullYear()
+        console.log(req.params)
         let data = []
         const deviceData = await deviceDataSchema.aggregate([
             {
@@ -171,5 +171,64 @@ ChartRoute.get('/buildingPower/:deviceId/:parameter', async (req, res, next) => 
         console.log(error)
     }
 })
+
+// device chart
+ChartRoute.get('/device/:from/:to', async (req, res, next) => {
+    let { from, to } = req.params
+    try {
+        let deviceIds = []
+        let data = []
+        const devices = await Devices.find().select('name')
+        devices.forEach(device => deviceIds.push(device._id))
+        const deviceData = await deviceDataSchema.aggregate([
+            {
+                $match: {
+                    device: { "$in": deviceIds },
+                    date: {
+                        $gte: new Date(from),
+                        $lte: new Date(to)
+                    }
+                }
+            },
+            {
+                $group: {
+                    _id: "$device",
+                    value: {
+                        $sum: { $toDouble: '$value' }
+                    }
+                }
+            }
+        ])
+        deviceData.forEach(device => {
+            let matchedDevice = devices.find(d => d._id.equals(device._id))
+            let newObj = { ...device, value: Number(device.value.toFixed(2)), name: matchedDevice.name }
+            data.push(newObj)
+        })
+
+        res.status(200).send(data);
+    } catch (error) {
+        next(error)
+        console.log(error)
+    }
+})
+// device chart
+ChartRoute.get('/deviceData/:from/:to ', async (req, res, next) => {
+    let { from, to } = req.params
+    try {
+        let data = await deviceDataSchema.find({
+            date: {
+                $gte: new Date(from),
+                $lte: new Date(to)
+            }
+        })
+
+        res.status(200).send(data);
+    } catch (error) {
+        next(error)
+        console.log(error)
+    }
+})
+
+
 
 export default ChartRoute;
