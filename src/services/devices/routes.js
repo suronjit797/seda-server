@@ -185,7 +185,6 @@ DeviceRoute.post('/capture', apiKeyMiddleware, async (req, res, next) => {
             switch (item.formulaParts.selectOne) {
                 case "parameter":
                     let filter = updateArray.filter((data) => data.name === item.formulaParts.valueOne)
-                    return console.log(filter)
                     p1 = parseFloat(filter[0].value).toFixed(2)   // value number asse na
                     break;
                 default:
@@ -288,8 +287,7 @@ DeviceRoute.post('/capture', apiKeyMiddleware, async (req, res, next) => {
 
         await updateArray.map((item) => {
             const newDeviceData = new DeviceData(item)
-            console.log(newDeviceData)
-            // const deviceData = newDeviceData.save({ new: true })
+            const deviceData = newDeviceData.save({ new: true })
         })
         res.status(201).send("Device data save successfully")
     } catch (error) {

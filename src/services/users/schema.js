@@ -12,6 +12,7 @@ const userSchema = new Schema({
     fax:{type:String},
     role: { type: String, required: true, enum: ["superAdmin", "installer", "admin", "user", "public"], default: "admin" },
     site: {type: Schema.Types.ObjectId, ref: "SiteLocation"},
+    dashboardSetting: {type: Schema.Types.ObjectId, ref: "DashboardSettingSchema"},
     isActive: { type: Boolean, default: true },
     logo: { type: String },
     avatar: { type: String },

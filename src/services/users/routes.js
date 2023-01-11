@@ -16,7 +16,7 @@ const cookieAge = 30 * 24 * 60 * 60 * 1000 //30 days
 //this will be used by super admin to get all users
 usersRoute.get('/', tokenMiddleware, [roleCheck.isSuperAdmin], async (req, res, next) => {
     try {
-        const users = await Users.find({ "role": { "$ne": 'superAdmin' } }).populate('site')
+        const users = await Users.find({ "role": { "$ne": 'superAdmin' } }).populate('site').populate('dashboardSetting')
         res.status(200).send(users)
     } catch (error) {
         next(error)
@@ -27,7 +27,7 @@ usersRoute.get('/', tokenMiddleware, [roleCheck.isSuperAdmin], async (req, res, 
 usersRoute.post('/', async (req, res, next) => {
     try {
 
-        
+
         const user = await Users.findOne({ email: req.body.email })
         if (!user) {
             const newUser = new Users(req.body)
@@ -139,7 +139,7 @@ usersRoute.put('/reset-password', validTokenMiddleware, async (req, res, next) =
 //get current logged user data
 usersRoute.get('/me', tokenMiddleware, async (req, res, next) => {
     try {
-        const userMe = await Users.findById(req.user._id).populate('site')
+        const userMe = await Users.findById(req.user._id).populate('site').populate('dashboardSetting')
         res.status(200).send(userMe)
     } catch (error) {
         next(error)
@@ -323,7 +323,7 @@ usersRoute.put('/:userId/logoUpload', tokenMiddleware, [roleCheck.isSuperAdmin],
 //this will be used by super admin to get all users
 usersRoute.get('/siteUser/:site/:role', tokenMiddleware, async (req, res, next) => {
     try {
-        let users=[]
+        let users = []
         switch (req.params.role) {
             case "admin":
                 let siteAdmin = await SiteLocation.findById(req.params.site).populate('admin')

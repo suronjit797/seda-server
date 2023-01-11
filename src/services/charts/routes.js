@@ -29,7 +29,6 @@ ChartRoute.get('/monthlyKWH/:deviceId/:parameter/:from/:to', async (req, res, ne
     try {
 
         let { deviceId, parameter, from, to } = req.params
-        console.log(req.params)
         let data = []
         const deviceData = await deviceDataSchema.aggregate([
             {
@@ -212,15 +211,28 @@ ChartRoute.get('/device/:from/:to', async (req, res, next) => {
     }
 })
 // device chart
-ChartRoute.get('/deviceData/:from/:to ', async (req, res, next) => {
+ChartRoute.get('/deviceData/:from/:to', async (req, res, next) => {
     let { from, to } = req.params
+    console.log({ from, to })
     try {
-        let data = await deviceDataSchema.find({
-            date: {
-                $gte: new Date(from),
-                $lte: new Date(to)
+        let data = await deviceDataSchema.aggregate([{
+            $match: {
+                date: {
+                    $gte: new Date(from),
+                    $lte: new Date(to)
+                }
             }
-        })
+        }])
+
+        let d1 = data.populate('device')
+        console.log(d1)
+
+        // let data = await deviceDataSchema.find({
+        //     date: {
+        //         $gte: new Date(from),
+        //         $lte: new Date(to)
+        //     }
+        // }).populate('device')
 
         res.status(200).send(data);
     } catch (error) {

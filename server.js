@@ -18,6 +18,7 @@ import FormulaRoute from './src/services/formulas/routes.js'
 import ChartRoute from './src/services/charts/routes.js'
 import ReportRoute from './src/services/reports/routes.js'
 import NotificationRoute from './src/services/notifications/routes.js'
+import DashboardSetting from './src/services/dashboard/routes.js'
 
 const server = express()
 
@@ -33,6 +34,7 @@ server.use(express.static('./', { index: 'index.html' }))
 // ******************* ROUTES ***********************
 server.use("/building-type", BuildingTypeRoute)
 server.use("/chart", ChartRoute)
+server.use("/dashboardSetting", DashboardSetting)
 server.use("/device", DeviceRoute)
 server.use("/device-type", DeviceTypeRoute)
 server.use("/documents", documentRoute)

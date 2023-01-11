@@ -57,94 +57,97 @@ FormulaRoute.delete('/:formulaId', tokenMiddleware, async (req, res, next) => {
 })
 
 FormulaRoute.post('/formulaResult', async (req, res, next) => {
-    let date = moment().format('YYYY-MM-DD');
-    // let date = moment().format('YYYY-MM-DD');
-    let year = new Date().getFullYear()
-    let month = new Date().getMonth() + 1
+    try {
+        let date = moment('').format('YYYY-MM-DD');
+        let year = new Date().getFullYear()
+        let month = new Date().getMonth() + 1
 
-    let lastDay = [31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31]
+        let lastDay = [31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31]
 
-    const { formulaName, isMonthly, deviceId } = req.body
-    const formula = await Formula.find()
+        const { formulaName, isMonthly, deviceId } = req.body
+        const formula = await Formula.find()
 
-    if (!formulaName || !deviceId) {
-        return res.status(404).send({ message: 'Please send formulaName, deviceId ' })
-    }
+        if (!formulaName || !deviceId) {
+            return res.status(404).send({ message: 'Please send formulaName, deviceId ' })
+        }
 
-    const dataValue = await deviceDataSchema.aggregate([
-        {
-            $match: {
-                device: ObjectId(deviceId),
-                date: !!isMonthly ? {
-                    $gte: new Date(`${year}-${('00' + month).slice(-2)}-01`),
-                    $lte: new Date(`${year}-${('00' + month).slice(-2)}-${lastDay[month - 1]}`)
-                } : {
-                    $gte: new Date(`${date}T00:00:00`),
-                    $lte: new Date(`${date}T23:59:59`)
+        const dataValue = await deviceDataSchema.aggregate([
+            {
+                $match: {
+                    device: ObjectId(deviceId),
+                    date: !!isMonthly ? {
+                        $gte: new Date(`${year}-${('00' + month).slice(-2)}-01`),
+                        $lte: new Date(`${year}-${('00' + month).slice(-2)}-${lastDay[month - 1]}`)
+                    } : {
+                        $gte: new Date(`${date}T00:00:00`),
+                        $lte: new Date(`${date}T23:59:59`)
+                    }
                 }
-            }
-        },
-        {
-            $group: {
-                _id: "$name",
-                value: {
-                    $sum: { $toDouble: '$value' }
-                },
-            }
-        },
-    ])
+            },
+            {
+                $group: {
+                    _id: "$name",
+                    value: {
+                        $sum: { $toDouble: '$value' }
+                    },
+                }
+            },
+        ])
 
-    const selectFormula = nameStr => {
-        let formulaItems = []
-        let findF = {}
-        let operator
-        if (formula.length > 0) {
-            findF = (formula.find(f => f.name === nameStr))
-            if (findF.formula.includes('x')) {
-                operator = 'x'
-            } else if (findF.formula.includes('+')) {
-                operator = '+'
-            } else if (findF.formula.includes('-')) {
-                operator = '-'
-            } else if (findF.formula.includes('/')) {
-                operator = '/'
-            }
-            let formulaBreak = findF.formula.split(operator);
-            formulaBreak.map(value => {
-                if ((formula.find(f => f.name.trim() === value.trim()))) {
-                    let result = selectFormula(value.trim())
-                    formulaItems.push(result)
-                } else if (isNaN(Number(value))) {
-                    let findValue = dataValue.find(data => data._id.trim() === value.trim())
-                    formulaItems.push((findValue?.value || 0))
+        const selectFormula = nameStr => {
+            let formulaItems = []
+            let findF = {}
+            let operator
+            if (formula.length > 0) {
+                findF = (formula.find(f => f.name === nameStr))
+                if (findF.formula.includes('x')) {
+                    operator = 'x'
+                } else if (findF.formula.includes('+')) {
+                    operator = '+'
+                } else if (findF.formula.includes('-')) {
+                    operator = '-'
+                } else if (findF.formula.includes('/')) {
+                    operator = '/'
+                }
+                let formulaBreak = findF.formula.split(operator);
+                formulaBreak.map(value => {
+                    if ((formula.find(f => f.name.trim() === value.trim()))) {
+                        let result = selectFormula(value.trim())
+                        formulaItems.push(result)
+                    } else if (isNaN(Number(value))) {
+                        let findValue = dataValue.find(data => data._id.trim() === value.trim())
+                        formulaItems.push((findValue?.value || 0))
+                    } else {
+                        formulaItems.push(Number(value))
+                    }
+                })
+                let operatorResult = {
+                    '+': (arr) => arr.reduce((a, b) => a + b),
+                    '-': (arr) => arr.reduce((a, b) => a - b),
+                    'x': (arr) => arr.reduce((a, b) => {
+                        a = a === 0 ? 1 : a
+                        b = b === 0 ? 1 : b
+                        return a * b
+                    }),
+                    '/': (arr) => arr.reduce((a, b) => {
+                        a = a === 0 ? 1 : a
+                        b = b === 0 ? 1 : b
+                        return a / b
+                    }),
+                }
+                if (operatorResult['+'](formulaItems) === 0) {
+                    return 0
                 } else {
-                    formulaItems.push(Number(value))
+                    return operatorResult[operator](formulaItems)
                 }
-            })
-            let operatorResult = {
-                '+': (arr) => arr.reduce((a, b) => a + b),
-                '-': (arr) => arr.reduce((a, b) => a - b),
-                'x': (arr) => arr.reduce((a, b) => {
-                    a = a === 0 ? 1 : a
-                    b = b === 0 ? 1 : b
-                    return a * b
-                }),
-                '/': (arr) => arr.reduce((a, b) => {
-                    a = a === 0 ? 1 : a
-                    b = b === 0 ? 1 : b
-                    return a / b
-                }),
-            }
-            if (operatorResult['+'](formulaItems) === 0) {
-                return 0
-            } else {
-                return operatorResult[operator](formulaItems)
             }
         }
-    }
 
-    let result = selectFormula(formulaName)
-    res.send({ result, formula: formulaName })
+        let result = selectFormula(formulaName)
+        res.send({ result, formula: formulaName })
+    } catch (error) {
+        next(error)
+    }
 
 })
 
