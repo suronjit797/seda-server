@@ -3,23 +3,27 @@ import deviceDataSchema from "../devices/deviceDataSchema.js"
 import Devices from '../devices/schema.js'
 import mongoose from 'mongoose'
 import moment from 'moment'
+import { tokenMiddleware } from '../../utils/jwtAuth.js'
 const ObjectId = mongoose.Types.ObjectId;
 
 const ChartRoute = express.Router()
 
-ChartRoute.get('/byParameter/:deviceId/:parameter', async (req, res, next) => {
+ChartRoute.get('/byParameter/:deviceId/:parameter', tokenMiddleware, async (req, res, next) => {
     try {
+        console.log({user: req.user})
         let data = [];
-        // const deviceData = await deviceDataSchema.find({ device: req.params.deviceId, name: req.params.parameter })
-        const deviceData = await deviceDataSchema.find({ device: req.params.deviceId }).limit(1000)
+        let deviceData
+        if(req.user.role === 'superAdmin'){
+            deviceData = await deviceDataSchema.find({ name: req.params.parameter }).limit(4000)
+        }else{
+            deviceData = await deviceDataSchema.find({ device: req.params.deviceId, name: req.params.parameter })
+        }        
         if (deviceData) {
-            deviceData.forEach(async (item) => {
-                data.push([item.createdAt, (Math.round(item.value * 100) / 100).toFixed(2)])
+            deviceData.forEach((item) => {
+                data.push([item.createdAt, item.name, (Math.round(item.value * 100) / 100).toFixed(2)])
             })
-            res.status(200).send(data)
-        } else {
-            res.status(200).send(data)
         }
+        res.status(200).send(data)
     } catch (error) {
         next(error)
         console.log(error)
