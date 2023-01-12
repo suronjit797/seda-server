@@ -169,6 +169,7 @@ DeviceRoute.delete('/:deviceId', tokenMiddleware, async (req, res, next) => {
     }
 })
 
+
 // routes for capture device data
 DeviceRoute.post('/capture', apiKeyMiddleware, async (req, res, next) => {
     try {
@@ -188,7 +189,7 @@ DeviceRoute.post('/capture', apiKeyMiddleware, async (req, res, next) => {
                     p1 = parseFloat(filter[0].value).toFixed(2)   // value number asse na
                     break;
                 default:
-                    p1=0;
+                    p1 = 0;
                     break;
             }
             switch (item.formulaParts.selectTwo) {
@@ -209,7 +210,7 @@ DeviceRoute.post('/capture', apiKeyMiddleware, async (req, res, next) => {
                     }
                     break;
                 default:
-                    p2=0;
+                    p2 = 0;
                     break;
             }
             switch (item.formulaParts.selectThree) {
@@ -230,7 +231,7 @@ DeviceRoute.post('/capture', apiKeyMiddleware, async (req, res, next) => {
                     }
                     break;
                 default:
-                    p3=0;
+                    p3 = 0;
                     break;
             }
             switch (item.formulaParts.selectFour) {
@@ -251,7 +252,7 @@ DeviceRoute.post('/capture', apiKeyMiddleware, async (req, res, next) => {
                     }
                     break;
                 default:
-                    p4=0;
+                    p4 = 0;
                     break;
             }
             switch (item.formulaParts.selectFive) {
@@ -272,11 +273,11 @@ DeviceRoute.post('/capture', apiKeyMiddleware, async (req, res, next) => {
                     }
                     break;
                 default:
-                    p5=0;
+                    p5 = 0;
                     break;
             }
             FormulaValue = eval(p1 + p2 + p3 + p4 + p5)
-            data ={
+            data = {
                 name: item.name,
                 value: FormulaValue,
                 date: new Date(),
@@ -306,25 +307,41 @@ DeviceRoute.get('/device-data/:deviceId', async (req, res, next) => {
 })
 DeviceRoute.get('/device-parameters/:deviceId', tokenMiddleware, async (req, res, next) => {
     try {
-        const parameters = await DeviceData.aggregate([
-            {
-                // only match documents that have this field
-                // you can omit this stage if you don't have missing fieldX
-                $match: { "device": new mongoose.Types.ObjectId(req.params.deviceId) }
-            },
-            {
-                $group: {
-                    "_id": "$name",
-                    "device": { "$first": "$device" },  //$first accumulator
-                    "count": { "$sum": 1 },  //$sum accumulator
+        let parameters
+        if (req.user.role === 'superAdmin') {
+            parameters = await DeviceData.aggregate([
+                {
+                    $group: {
+                        "_id": "$name",
+                        "device": { "$first": "$device" },  //$first accumulator
+                        "count": { "$sum": 1 },  //$sum accumulator
+                    }
                 }
-            }
-        ])
+            ])
+        } else {
+            parameters = await DeviceData.aggregate([
+                {
+                    // only match documents that have this field
+                    // you can omit this stage if you don't have missing fieldX
+                    $match: { "device": new mongoose.Types.ObjectId(req.params.deviceId) }
+                },
+
+                {
+                    $group: {
+                        "_id": "$name",
+                        "device": { "$first": "$device" },  //$first accumulator
+                        "count": { "$sum": 1 },  //$sum accumulator
+                    }
+                }
+            ])
+        }
+
         res.status(200).send(parameters)
     } catch (error) {
         console.log(error)
     }
 })
+
 export default DeviceRoute;
 
 

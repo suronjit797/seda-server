@@ -16,22 +16,22 @@ DashboardSetting.get('/', tokenMiddleware, async (req, res, next) => {
 })
 DashboardSetting.put('/', tokenMiddleware, async (req, res, next) => {
     try {
-        const data = req.body
+        const data= req.body
         let result
+        let userResult
+
         if (data.dashboardId) {
             result = await dashboardSchema.findByIdAndUpdate(data.dashboardId, data, { upsert: true })
+            userResult = await userSchema.findById(data.userId).populate('dashboardSetting')
         } else {
             let newData = new dashboardSchema(req.body)
             result = await newData.save()
-
             let user = await userSchema.findById(data.userId)
             user.dashboardSetting = result._id
-            let userResult = await userSchema.findByIdAndUpdate(data.userId, user, { upsert: true })
-            console.log(userResult)
-
+            userResult = await userSchema.findByIdAndUpdate(data.userId, user, { upsert: true }).populate('dashboardSetting')
+            
         }
-        return res.send(result)
-
+        return res.send({ result, userResult })
 
     } catch (error) {
         next(error)

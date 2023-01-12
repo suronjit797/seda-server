@@ -10,7 +10,8 @@ const ChartRoute = express.Router()
 ChartRoute.get('/byParameter/:deviceId/:parameter', async (req, res, next) => {
     try {
         let data = [];
-        const deviceData = await deviceDataSchema.find({ device: req.params.deviceId, name: req.params.parameter })
+        // const deviceData = await deviceDataSchema.find({ device: req.params.deviceId, name: req.params.parameter })
+        const deviceData = await deviceDataSchema.find({ device: req.params.deviceId }).limit(1000)
         if (deviceData) {
             deviceData.forEach(async (item) => {
                 data.push([item.createdAt, (Math.round(item.value * 100) / 100).toFixed(2)])

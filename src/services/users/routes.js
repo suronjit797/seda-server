@@ -69,6 +69,9 @@ usersRoute.post('/register', async (req, res, next) => {
 usersRoute.post('/login', async (req, res, next) => {
     try {
         const { email, password } = req.body
+        let u = await Users.find({email})
+        console.log(u)
+
         const user = await Users.checkCredentials(email, password)
         if (user) {
             if (!user.isActive) {
