@@ -8,19 +8,19 @@ const dashboardSettingSchema = new Schema({
     dashboard1: {
         type: Object,
         name: { type: 'string', required: true, default: "Dashboard 1" },
-        counter: { type: Array, required: true },
+        counter: { type: Object, required: true },
         graphs: { type: Object, required: true },
     },
     dashboard2: {
         type: Object,
         name: { type: 'string', required: true, default: "Dashboard 1" },
-        counter: { type: Array, required: true },
+        counter: { type: Object, required: true },
         graphs: { type: Object, required: true },
     },
     dashboard3: {
         type: Object,
         name: { type: 'string', required: true, default: "Dashboard 1" },
-        counter: { type: Array, required: true },
+        counter: { type: Object, required: true },
         graphs: { type: Object, required: true },
     }
 }, {

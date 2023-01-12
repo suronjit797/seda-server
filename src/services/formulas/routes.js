@@ -56,50 +56,64 @@ FormulaRoute.delete('/:formulaId', tokenMiddleware, async (req, res, next) => {
     }
 })
 
-FormulaRoute.post('/formulaResult', async (req, res, next) => {
+FormulaRoute.post('/formulaResult', tokenMiddleware, async (req, res, next) => {
     try {
-        let date = moment('').format('YYYY-MM-DD');
-        let year = new Date().getFullYear()
-        let month = new Date().getMonth() + 1
-
-        let lastDay = [31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31]
-
-        const { formulaName, isMonthly, deviceId } = req.body
+        const { formulaName, deviceId, from, to } = req.body
         const formula = await Formula.find()
+        let dataValue
+        let unit
 
-        if (!formulaName || !deviceId) {
-            return res.status(404).send({ message: 'Please send formulaName, deviceId ' })
+        if (!formulaName || !deviceId || !from || !to) {
+            return res.status(404).send({ message: 'Please send formulaName, deviceId, starting date and ending date ' })
         }
 
-        const dataValue = await deviceDataSchema.aggregate([
-            {
-                $match: {
-                    device: ObjectId(deviceId),
-                    date: !!isMonthly ? {
-                        $gte: new Date(`${year}-${('00' + month).slice(-2)}-01`),
-                        $lte: new Date(`${year}-${('00' + month).slice(-2)}-${lastDay[month - 1]}`)
-                    } : {
-                        $gte: new Date(`${date}T00:00:00`),
-                        $lte: new Date(`${date}T23:59:59`)
+        if (req.user.role === 'superAdmin') {
+            dataValue = await deviceDataSchema.aggregate([
+                {
+                    $match: {
+                        date: {
+                            $gte: new Date(from),
+                            $lte: new Date(to)
+                        }
                     }
-                }
-            },
-            {
-                $group: {
-                    _id: "$name",
-                    value: {
-                        $sum: { $toDouble: '$value' }
-                    },
-                }
-            },
-        ])
+                },
+                {
+                    $group: {
+                        _id: "$name",
+                        value: {
+                            $sum: { $toDouble: '$value' }
+                        },
+                    }
+                },
+            ])
+        } else {
+            dataValue = await deviceDataSchema.aggregate([
+                {
+                    $match: {
+                        device: ObjectId(deviceId),
+                        date: {
+                            $gte: new Date(from),
+                            $lte: new Date(to)
+                        }
+                    }
+                },
+                {
+                    $group: {
+                        _id: "$name",
+                        value: {
+                            $sum: { $toDouble: '$value' }
+                        },
+                    }
+                },
+            ])
+        }
 
         const selectFormula = nameStr => {
             let formulaItems = []
             let findF = {}
             let operator
             if (formula.length > 0) {
-                findF = (formula.find(f => f.name === nameStr))
+                findF = (formula.find(f => f.name.trim() === nameStr.trim()))
                 if (findF.formula.includes('x')) {
                     operator = 'x'
                 } else if (findF.formula.includes('+')) {
@@ -125,16 +139,19 @@ FormulaRoute.post('/formulaResult', async (req, res, next) => {
                     '+': (arr) => arr.reduce((a, b) => a + b),
                     '-': (arr) => arr.reduce((a, b) => a - b),
                     'x': (arr) => arr.reduce((a, b) => {
-                        a = a === 0 ? 1 : a
-                        b = b === 0 ? 1 : b
+                        if (a === 0 || b === 0) {
+                            return 0
+                        }
                         return a * b
                     }),
                     '/': (arr) => arr.reduce((a, b) => {
-                        a = a === 0 ? 1 : a
-                        b = b === 0 ? 1 : b
+                        if (a === 0 || b === 0) {
+                            return 0
+                        }
                         return a / b
                     }),
                 }
+                unit = findF.unit
                 if (operatorResult['+'](formulaItems) === 0) {
                     return 0
                 } else {
@@ -144,11 +161,10 @@ FormulaRoute.post('/formulaResult', async (req, res, next) => {
         }
 
         let result = selectFormula(formulaName)
-        res.send({ result, formula: formulaName })
+        res.send({ result: result.toFixed(2), formula: formulaName, unit })
     } catch (error) {
         next(error)
     }
-
 })
 
 export default FormulaRoute;
