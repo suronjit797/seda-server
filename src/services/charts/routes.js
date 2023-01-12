@@ -8,19 +8,32 @@ const ObjectId = mongoose.Types.ObjectId;
 
 const ChartRoute = express.Router()
 
-ChartRoute.get('/byParameter/:deviceId/:parameter', tokenMiddleware, async (req, res, next) => {
+ChartRoute.get('/byParameter/:deviceId/:parameter/:from/:to', tokenMiddleware, async (req, res, next) => {
     try {
-        console.log({user: req.user})
+        let { deviceId, parameter, from, to } = req.params
         let data = [];
         let deviceData
-        if(req.user.role === 'superAdmin'){
-            deviceData = await deviceDataSchema.find({ name: req.params.parameter }).limit(4000)
-        }else{
-            deviceData = await deviceDataSchema.find({ device: req.params.deviceId, name: req.params.parameter })
-        }        
+        if (req.user.role === 'superAdmin') {
+            deviceData = await deviceDataSchema.find({
+                name: parameter,
+                date: {
+                    $gte: new Date(from),
+                    $lte: new Date(to)
+                }
+            }).limit(4000)
+        } else {
+            deviceData = await deviceDataSchema.find({
+                device: deviceId,
+                name: parameter,
+                date: {
+                    $gte: new Date(from),
+                    $lte: new Date(to)
+                }
+            })
+        }
         if (deviceData) {
             deviceData.forEach((item) => {
-                data.push([item.createdAt, item.name, (Math.round(item.value * 100) / 100).toFixed(2)])
+                data.push([item.createdAt, (Math.round(item.value * 100) / 100).toFixed(2), item.name])
             })
         }
         res.status(200).send(data)
@@ -177,12 +190,18 @@ ChartRoute.get('/buildingPower/:deviceId/:parameter', async (req, res, next) => 
 })
 
 // device chart
-ChartRoute.get('/device/:from/:to', async (req, res, next) => {
-    let { from, to } = req.params
+ChartRoute.post('/device', async (req, res, next) => {
+    let { from, to, queryDevice } = req.body
     try {
         let deviceIds = []
         let data = []
-        const devices = await Devices.find().select('name')
+        let devices
+        if (queryDevice?.length > 0) {
+            devices = await Devices.find({ name: queryDevice }).select('name')
+        } else {
+            devices = await Devices.find().select('name')
+        }
+
         devices.forEach(device => deviceIds.push(device._id))
         const deviceData = await deviceDataSchema.aggregate([
             {

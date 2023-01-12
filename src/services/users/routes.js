@@ -69,8 +69,7 @@ usersRoute.post('/register', async (req, res, next) => {
 usersRoute.post('/login', async (req, res, next) => {
     try {
         const { email, password } = req.body
-        let u = await Users.find({email})
-        console.log(u)
+        // let u = await Users.find({email})
 
         const user = await Users.checkCredentials(email, password)
         if (user) {
@@ -174,7 +173,7 @@ usersRoute.get('/me/allUsers', tokenMiddleware, async (req, res, next) => {
         let SiteUsers = []
         const sites = await SiteLocation.find({ admin: req.user._id })
         const getUsers = async (site) => {
-            const usersOfSite = await Users.find({ site: site._id }).populate('site')
+            const usersOfSite = await Users.find({ site: site._id }).populate('site').populate('dashboardSetting')
             SiteUsers.push(usersOfSite)
         }
         const promise = sites.map((site) => getUsers(site))
@@ -194,7 +193,7 @@ usersRoute.get('/me/users', tokenMiddleware, async (req, res, next) => {
         let SiteUsers = []
         const sites = await SiteLocation.find({ admin: req.user._id })
         const getUsers = async (site) => {
-            const usersOfSite = await Users.find({ $and: [{ role: 'user' }, { site: site._id }] }).populate('site')
+            const usersOfSite = await Users.find({ $and: [{ role: 'user' }, { site: site._id }] }).populate('site').populate('dashboardSetting')
             SiteUsers.push(usersOfSite)
         }
         const promise = sites.map((site) => getUsers(site))
@@ -214,7 +213,7 @@ usersRoute.get('/me/public', tokenMiddleware, async (req, res, next) => {
         let SiteUsers = []
         const sites = await SiteLocation.find({ admin: req.user._id })
         const getUsers = async (site) => {
-            const usersOfSite = await Users.find({ $and: [{ role: 'public' }, { site: site._id }] }).populate('site')
+            const usersOfSite = await Users.find({ $and: [{ role: 'public' }, { site: site._id }] }).populate('site').populate('dashboardSetting')
             SiteUsers.push(usersOfSite)
         }
         const promise = sites.map((site) => getUsers(site))
@@ -279,7 +278,7 @@ usersRoute.get('/logout', (req, res) => {
 //find a specific user
 usersRoute.get('/:userId', tokenMiddleware, async (req, res, next) => {
     try {
-        const users = await Users.findOne({ _id: req.params.userId }).populate('site')
+        const users = await Users.findOne({ _id: req.params.userId }).populate('site').populate('dashboardSetting')
         res.status(200).send(users)
     } catch (error) {
         next(error)
