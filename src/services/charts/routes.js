@@ -12,25 +12,15 @@ ChartRoute.get('/byParameter/:deviceId/:parameter/:from/:to', tokenMiddleware, a
     try {
         let { deviceId, parameter, from, to } = req.params
         let data = [];
-        let deviceData
-        if (req.user.role === 'superAdmin') {
-            deviceData = await deviceDataSchema.find({
-                name: parameter,
-                date: {
-                    $gte: new Date(from),
-                    $lte: new Date(to)
-                }
-            }).limit(4000)
-        } else {
-            deviceData = await deviceDataSchema.find({
-                device: deviceId,
-                name: parameter,
-                date: {
-                    $gte: new Date(from),
-                    $lte: new Date(to)
-                }
-            })
-        }
+        const deviceData = await deviceDataSchema.find({
+            device: deviceId,
+            name: parameter,
+            date: {
+                $gte: new Date(from),
+                $lte: new Date(to)
+            }
+        })
+
         if (deviceData) {
             deviceData.forEach((item) => {
                 data.push([item.createdAt, (Math.round(item.value * 100) / 100).toFixed(2), item.name])
@@ -53,7 +43,6 @@ ChartRoute.get('/monthlyKWH/:deviceId/:parameter/:from/:to', async (req, res, ne
                 $match: {
                     device: ObjectId(deviceId),
                     name: parameter,
-                    // date: { $gt: new Date(`2022-01-01`) }
                     date: {
                         $gte: new Date(from),
                         $lte: new Date(to)
@@ -110,6 +99,8 @@ ChartRoute.get('/monthlyKWH/:deviceId/:parameter/:from/:to', async (req, res, ne
                 data.push(0)
             }
         }
+
+        console.log(data.length)
         res.status(200).send(data);
     } catch (error) {
         next(error)
