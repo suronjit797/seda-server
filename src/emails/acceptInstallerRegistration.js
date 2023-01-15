@@ -1,6 +1,6 @@
 
 
-const addNewInstaller = (name, id, role, link) => {
+const acceptInstallerRegistration = (name, email) => {
     return `
     <!DOCTYPE html>
 <html lang="en" xmlns="http://www.w3.org/1999/xhtml" xmlns:o="urn:schemas-microsoft-com:office:office">
@@ -48,18 +48,23 @@ const addNewInstaller = (name, id, role, link) => {
                                             Dear ${name},</h1>
                                         <p
                                             style="margin:0 0 12px 0;font-size:16px;line-height:24px;font-family:Arial,sans-serif;">
-                                            We have successfully received your registration to become an installer.
+                                            Your email account has been successfully verified on our system.
                                         </p>
                                         <p
                                             style="margin:0 0 12px 0;font-size:16px;line-height:24px;font-family:Arial,sans-serif;">
-                                            Please click the below link to verify your email account:
-                                            <a href="${link}"> https://seda.ivis.com.my/${role}/verification/ID=${id} </a>
+                                            Website Login:
+                                            <a href="www.seda.ivis.com.my/login ">
+                                                www.seda.ivis.com.my/login </a>
+                                        </p>
+                                        <p
+                                            style="margin:0 0 12px 0;font-size:16px;line-height:24px;font-family:Arial,sans-serif;">
+                                            Username:                                            
+                                            <a href="mailto:${email}"> ${email}</a>
                                         </p>
 
                                         <p
                                             style="margin:0;font-size:16px;line-height:24px;font-family:Arial,sans-serif;">
-                                            Once your account has been verified, you will be able to access your
-                                            dashboard page. You can then proceed to create devices on the system.
+                                            You are now able to access your dashboard page. You can then proceed to create devices on the system.
                                         </p>
                                         <p style="font-size:16px;font-family:Arial,sans-serif;">Best Regards,</p>
                                     </td>
@@ -124,4 +129,4 @@ const addNewInstaller = (name, id, role, link) => {
 </html>`
 }
 
-export default addNewInstaller;
+export default acceptInstallerRegistration;

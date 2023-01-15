@@ -9,6 +9,7 @@ import sendEmail from '../../utils/sendEmail.js'
 import forgotPassword from '../../emails/forgotPassword.js'
 import addNewInstaller from '../../emails/addNewInstaller.js'
 import SiteLocation from "../siteLocation/schema.js"
+import acceptInstallerRegistration from '../../emails/acceptInstallerRegistration.js'
 
 const usersRoute = express.Router()
 const cookieAge = 30 * 24 * 60 * 60 * 1000 //30 days
@@ -32,8 +33,12 @@ usersRoute.post('/', async (req, res, next) => {
         if (!user) {
             const newUser = new Users(req.body)
             const user = await newUser.save({ new: true })
+
+            // send mail
             let title = 'We Have Received Your Installer Registration on SEDA Online Energy Monitoring System (OEMS) ! '
-            let body = addNewInstaller(newUser.name, newUser._id)
+            const link = `${process.env.FE_DEV_TRUST_BACKEND_URL}/${user.role}/verification/ID=${user._id}`
+            let body = addNewInstaller(user.name, user._id, user.role, link)
+
             await sendEmail(req.body.email, title, body);
             res.status(201).send(user)
         } else {
@@ -52,6 +57,10 @@ usersRoute.post('/register', async (req, res, next) => {
             const newUser = new Users(req.body)
             const user = await newUser.save({ new: true })
             const token = await generateJWTToken(user)
+            let title = 'We Have Received Your Installer Registration on SEDA Online Energy Monitoring System (OEMS) ! '
+            const link = `${process.env.FE_DEV_TRUST_BACKEND_URL}/${newUser.role}/verification/ID=${newUser._id}`
+            let body = addNewInstaller(newUser.name, newUser._id, newUser.role, link)
+            await sendEmail(req.body.email, title, body);
             res.cookie("token", token, {
                 httpOnly: true,
                 maxAge: cookieAge
@@ -86,7 +95,7 @@ usersRoute.post('/login', async (req, res, next) => {
             }
 
         } else {
-            next(createHttpError(401, "Credentials information wrong!"))
+            next(createHttpError(401, 'The information you entered is incorrect'))
         }
     } catch (error) {
         next(error)
@@ -287,7 +296,14 @@ usersRoute.get('/:userId', tokenMiddleware, async (req, res, next) => {
 })
 usersRoute.put('/:userId', tokenMiddleware, async (req, res, next) => {
     try {
+
         const updateUser = await Users.findByIdAndUpdate(req.params.userId, req.body, { new: true })
+
+        if (updateUser.isActive) {
+            const body = acceptInstallerRegistration(updateUser.name, updateUser.email)
+            const title = 'Your Account on SEDA Online Energy Monitoring System (OEMS) Has Been Successfully Verified!'
+            await sendEmail(updateUser.email, title, body);
+        }
         res.status(200).send(updateUser)
     } catch (error) {
         next(error)

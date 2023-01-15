@@ -4,6 +4,7 @@ const { Schema, model } = mongoose
 
 const documentSchema = new Schema({
     name: { type: String, required: true },
+    location: { type: String },
     media: { type: String },
     type: { type: String, enum: ["SchematicDiagram", "ElectricBill"], default:"ElectricBill" },
     site: {type: Schema.Types.ObjectId, ref: "SiteLocation", required: true},

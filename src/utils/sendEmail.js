@@ -19,8 +19,10 @@ const sendEmail = async (email, subject, text) => {
                // console.log("Server is ready to take our messages");
             }
         });
+
+        // tech@seda.gov.my
         const mailOptions = {
-            from: '"SEDA Team" <no-reply@ivis.com.my>',
+            from: '"SEDA Team" <tech@ivis.gov.my>',
             to: email,
             subject: subject,
             text: text,
@@ -30,10 +32,10 @@ const sendEmail = async (email, subject, text) => {
             if (error) {
               console.log(error);
             } else {
-              //console.log('Email sent: ' + info.response);
+              console.log('Email sent: ' + info.response);
             }
           });
-        // console.log("email sent sucessfully");
+        console.log("email sent sucessfully");
     } catch (error) {
         console.log(error, "email not sent");
     }

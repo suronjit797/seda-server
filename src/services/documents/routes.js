@@ -19,6 +19,8 @@ documentRoute.post('/', tokenMiddleware, async (req, res, next) => {
 
 })
 
+
+
 documentRoute.put('/:documentId', tokenMiddleware, multer({ storage: saveToMedia }).single("media"), async (req, res, next) => {
     try {
         const imageUrl = req.file.path;
