@@ -90,17 +90,32 @@ ChartRoute.get('/monthlyKWH/:deviceId/:parameter/:from/:to', async (req, res, ne
                 }
             }
         ])
+
+        let monthNames = [
+            '',
+            "Jan",
+            "Feb",
+            "Mar",
+            "Apr",
+            "May",
+            "Jun",
+            "Jul",
+            "Aug",
+            "Sep",
+            "Oct",
+            "Nov",
+            "Dec"
+        ]
+
         let i = 1
         for (i; i <= 12; i++) {
             let filterData = deviceData.filter(e => e.monthNo === i)
             if (filterData.length > 0) {
-                data.push(Math.round(filterData[0].value))
+                data.push({ x: monthNames[i], y: Math.round(filterData[0].value) })
             } else {
-                data.push(0)
+                data.push({ x: monthNames[i], y: 0 })
             }
-        }
-
-        console.log(data.length)
+    }
         res.status(200).send(data);
     } catch (error) {
         next(error)
@@ -182,7 +197,7 @@ ChartRoute.get('/buildingPower/:deviceId/:parameter', async (req, res, next) => 
 
 // device chart
 ChartRoute.post('/device', async (req, res, next) => {
-    let { from, to, queryDevice } = req.body
+    let { from, to, queryDevice, deviceId } = req.body
     try {
         let deviceIds = []
         let data = []
@@ -197,7 +212,7 @@ ChartRoute.post('/device', async (req, res, next) => {
         const deviceData = await deviceDataSchema.aggregate([
             {
                 $match: {
-                    device: { "$in": deviceIds },
+                    device: { "$in": deviceId },
                     date: {
                         $gte: new Date(from),
                         $lte: new Date(to)
@@ -213,6 +228,8 @@ ChartRoute.post('/device', async (req, res, next) => {
                 }
             }
         ])
+
+        console.log(deviceData)
         deviceData.forEach(device => {
             let matchedDevice = devices.find(d => d._id.equals(device._id))
             let newObj = { ...device, value: Number(device.value.toFixed(2)), name: matchedDevice.name }
